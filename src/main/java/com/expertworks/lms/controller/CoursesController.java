@@ -18,6 +18,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+
+import com.expertworks.lms.http.BaseResponse;
+import com.expertworks.lms.http.CoursesResponse;
 import com.expertworks.lms.model.Courses;
 import com.expertworks.lms.model.VideoLink;
 import com.expertworks.lms.repository.CoursesRepository;
@@ -73,32 +76,40 @@ public class CoursesController {
 	}
 
 	@GetMapping("/courses/{teamId}")
-	public Courses getCourses(@PathVariable("teamId") String teamId) {
+	public CoursesResponse getCourses(@PathVariable("teamId") String teamId) {
 
+		CoursesResponse coursesResponse = null;
 		System.out.println(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
 		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
 		Object credentials = SecurityContextHolder.getContext().getAuthentication().getCredentials();
-		
+
 		String username = null;
-		String partnerId = null;
+
 		if (principal instanceof UserDetails) {
 			username = ((UserDetails) principal).getUsername();
 		} else {
 			username = principal.toString();
 		}
-		
 
 		if (credentials instanceof AuthTokenDetails) {
-			partnerId = ((AuthTokenDetails) credentials).getPartnerId();
+			teamId = ((AuthTokenDetails) credentials).getTeamId();
 
-		} else {
-			username = credentials.toString();
 		}
 
-
 		System.out.println("UserName : " + username);
-		return coursesRepository.getTeamCourses(teamId);
+		System.out.println("teamId : " + teamId);
+
+		coursesResponse = coursesRepository.getTeamCourses(teamId).toCourseResponse();
+
+		if (coursesResponse != null) {
+			coursesResponse.setResponseCode(BaseResponse.ResponseCode.SUCCESS);
+		} else {
+			coursesResponse = new CoursesResponse();
+			coursesResponse.setResponseCode(BaseResponse.ResponseCode.FAIL);
+		}
+
+		return coursesResponse;
 	}
 
 	@GetMapping("/courses/{teamId}/{courseId}")

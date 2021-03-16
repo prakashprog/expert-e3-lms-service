@@ -51,6 +51,7 @@ public class JwtFilter extends OncePerRequestFilter {
             
             authTokenDetails = new AuthTokenDetails();
             authTokenDetails.setPartnerId(claims.get("PartnerId", String.class));
+            authTokenDetails.setTeamId(claims.get("TeamId", String.class));
         }
 
         if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {

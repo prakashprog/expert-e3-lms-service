@@ -1,20 +1,21 @@
 package com.expertworks.lms.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBRangeKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
+import com.expertworks.lms.http.CoursesResponse;
 
-@DynamoDBTable(tableName = "Courses")
+@DynamoDBTable(tableName = "TeamCourses")
 
 public class Courses {
 
 	@DynamoDBHashKey
 	private String teamId;
 
-	@DynamoDBRangeKey
+	@DynamoDBAttribute
 	private String courseId;
 
 	@DynamoDBAttribute
@@ -155,6 +156,26 @@ public class Courses {
 	}
 
 
+	
+	public CoursesResponse  toCourseResponse() {
+		
+		CoursesResponse coursesResponse = new CoursesResponse();
+			
+		coursesResponse.setTeamId(this.teamId);
+		coursesResponse.setCourseId(this.courseId);
+		coursesResponse.setCreateDate(this.createDate);
+		coursesResponse.setPreferences(this.preferences);
+		coursesResponse.setS3folder(this.s3folder);
+		coursesResponse.setTitle(this.title);
+		List<VideoLink> videoLinks = new ArrayList<VideoLink>();
+	
+		for(VideoLink videoLink : getVideoLinks()) {
+			videoLinks.add(videoLink);
+		}	
+		coursesResponse.setVideoLinks(videoLinks);
+		return coursesResponse;
+		
+	}
 
 
 }

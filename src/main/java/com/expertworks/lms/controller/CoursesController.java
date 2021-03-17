@@ -75,8 +75,8 @@ public class CoursesController {
 		return coursesRepository.save(courses);
 	}
 
-	@GetMapping("/courses/{teamId}")
-	public CoursesResponse getCourses(@PathVariable("teamId") String teamId) {
+	@GetMapping("/courses")
+	public CoursesResponse getCourses() {
 
 		CoursesResponse coursesResponse = null;
 		System.out.println(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
@@ -85,6 +85,7 @@ public class CoursesController {
 		Object credentials = SecurityContextHolder.getContext().getAuthentication().getCredentials();
 
 		String username = null;
+		String teamId = null;
 
 		if (principal instanceof UserDetails) {
 			username = ((UserDetails) principal).getUsername();

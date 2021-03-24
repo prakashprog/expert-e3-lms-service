@@ -25,7 +25,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
-import com.expertworks.lms.model.Courses;
+import com.expertworks.lms.model.TeamCourses;
 import com.expertworks.lms.model.UserVideos;
 import com.expertworks.lms.model.VideoLink;
 import com.expertworks.lms.service.StorageService;
@@ -167,9 +167,9 @@ public class LMSController {
 	
 	
 	@GetMapping("/content/{teamId}")
-    public ResponseEntity<Courses> getTeamCourses(@PathVariable String teamId) {
+    public ResponseEntity<TeamCourses> getTeamCourses(@PathVariable String teamId) {
       
-		Courses teamCourses = new Courses();
+		TeamCourses teamCourses = new TeamCourses();
 			
 		HttpHeaders responseHeaders = new HttpHeaders();
         return new ResponseEntity<>(teamCourses, responseHeaders, HttpStatus.OK);

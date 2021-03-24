@@ -12,7 +12,11 @@ public class VideoLink {
     @DynamoDBAttribute
 	private String type;
 	
-	
+    @DynamoDBAttribute
+ 	private String title;
+    
+    @DynamoDBAttribute
+   	private String img;
 	/**
 	 * @return the url
 	 */
@@ -36,6 +40,30 @@ public class VideoLink {
 	 */
 	public void setType(String type) {
 		this.type = type;
+	}
+	/**
+	 * @return the title
+	 */
+	public String getTitle() {
+		return title;
+	}
+	/**
+	 * @param title the title to set
+	 */
+	public void setTitle(String title) {
+		this.title = title;
+	}
+	/**
+	 * @return the img
+	 */
+	public String getImg() {
+		return img;
+	}
+	/**
+	 * @param img the img to set
+	 */
+	public void setImg(String img) {
+		this.img = img;
 	}
 
 }

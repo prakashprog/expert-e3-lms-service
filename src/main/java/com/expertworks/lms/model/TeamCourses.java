@@ -5,15 +5,20 @@ import java.util.List;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBIndexHashKey;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBRangeKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import com.expertworks.lms.http.CoursesResponse;
 
-@DynamoDBTable(tableName = "CoursesMaster")
+@DynamoDBTable(tableName = "TeamCourses")
 
-public class Courses {
-
+public class TeamCourses {
 
 	@DynamoDBHashKey
+	private String teamId;
+
+	@DynamoDBRangeKey
+	@DynamoDBIndexHashKey(globalSecondaryIndexName = "courseId-index")
 	private String courseId;
 
 	@DynamoDBAttribute
@@ -34,8 +39,24 @@ public class Courses {
 	@DynamoDBAttribute
 	private String preferences;
 
+	public TeamCourses() {
+	}
 
-	
+	/**
+	 * @return the teamId
+	 */
+
+	public String getTeamId() {
+		return teamId;
+	}
+
+	/**
+	 * @param teamId the teamId to set
+	 */
+
+	public void setTeamId(String teamId) {
+		this.teamId = teamId;
+	}
 
 	/**
 	 * @return the courseId
@@ -142,6 +163,8 @@ public class Courses {
 	public CoursesResponse  toCourseResponse() {
 		
 		CoursesResponse coursesResponse = new CoursesResponse();
+			
+		coursesResponse.setTeamId(this.teamId);
 		coursesResponse.setCourseId(this.courseId);
 		coursesResponse.setCreateDate(this.createDate);
 		coursesResponse.setPreferences(this.preferences);

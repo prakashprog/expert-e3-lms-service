@@ -25,53 +25,59 @@ import io.jsonwebtoken.Claims;
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private JwtUtil jwtUtil;
-    
-    @Autowired
-    private CustomUserDetailsService service;
+	@Autowired
+	private JwtUtil jwtUtil;
 
+	@Autowired
+	private CustomUserDetailsService service;
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
+	@Override
+	protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,
+			FilterChain filterChain) throws ServletException, IOException {
 
-        String authorizationHeader = httpServletRequest.getHeader("Authorization");
+		String authorizationHeader = httpServletRequest.getHeader("Authorization");
 
-        String token = null;
-        String userName = null;
-        AuthTokenDetails authTokenDetails = null;
+		String token = null;
+		String userName = null;
+		AuthTokenDetails authTokenDetails = null;
 
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            token = authorizationHeader.substring(7);
-            userName = jwtUtil.extractUsername(token);
-            
-            Claims claims= jwtUtil.extractAllClaims(token);
-            
-           // System.out.println(claims.get("PartnerId", String.class));
-            
-            authTokenDetails = new AuthTokenDetails();
-            authTokenDetails.setPartnerId(claims.get("PartnerId", String.class));
-            authTokenDetails.setTeamId(claims.get("TeamId", String.class));
-        }
+		try {
 
-        if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+			if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+				token = authorizationHeader.substring(7);
+				userName = jwtUtil.extractUsername(token);
 
-            UserDetails userDetails = service.loadUserByUsername(userName);
+				Claims claims = jwtUtil.extractAllClaims(token);
 
-            if (jwtUtil.validateToken(token, userDetails)) {
+				// System.out.println(claims.get("PartnerId", String.class));
 
-                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-                        new UsernamePasswordAuthenticationToken(userDetails, authTokenDetails, userDetails.getAuthorities());
-                
-                usernamePasswordAuthenticationToken
-                        .setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
-                
-                
-                SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-               
-            }
-        }
-        filterChain.doFilter(httpServletRequest, httpServletResponse);
-    }
+				authTokenDetails = new AuthTokenDetails();
+				authTokenDetails.setPartnerId(claims.get("PartnerId", String.class));
+				authTokenDetails.setTeamId(claims.get("TeamId", String.class));
+			}
+
+			if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
+				UserDetails userDetails = service.loadUserByUsername(userName);
+
+				if (jwtUtil.validateToken(token, userDetails)) {
+
+					UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+							userDetails, authTokenDetails, userDetails.getAuthorities());
+
+					usernamePasswordAuthenticationToken
+							.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
+
+					SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+
+				}
+			}
+			filterChain.doFilter(httpServletRequest, httpServletResponse);
+		} catch (Exception e) {
+			e.printStackTrace();
+
+			((HttpServletResponse) httpServletResponse).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+		}
+	} // try close
 }
- 

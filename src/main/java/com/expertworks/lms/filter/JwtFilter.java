@@ -36,7 +36,6 @@ public class JwtFilter extends OncePerRequestFilter {
 			FilterChain filterChain) throws ServletException, IOException {
 
 		String authorizationHeader = httpServletRequest.getHeader("Authorization");
-
 		String token = null;
 		String userName = null;
 		AuthTokenDetails authTokenDetails = null;
@@ -61,6 +60,8 @@ public class JwtFilter extends OncePerRequestFilter {
 				UserDetails userDetails = service.loadUserByUsername(userName);
 
 				if (jwtUtil.validateToken(token, userDetails)) {
+					
+					System.out.println("Validation token is not expired");
 
 					UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
 							userDetails, authTokenDetails, userDetails.getAuthorities());
@@ -71,12 +72,16 @@ public class JwtFilter extends OncePerRequestFilter {
 					SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
 
 				}
+				
+				
 			}
 			filterChain.doFilter(httpServletRequest, httpServletResponse);
 		} catch (Exception e) {
+			System.out.println("Exception occured in Filter : "+e.getMessage());
 			e.printStackTrace();
 
 			((HttpServletResponse) httpServletResponse).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			//((HttpServletResponse) httpServletResponse).sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
 
 		}
 	} // try close

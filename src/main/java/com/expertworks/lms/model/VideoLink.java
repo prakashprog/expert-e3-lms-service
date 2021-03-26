@@ -15,6 +15,9 @@ public class VideoLink {
     @DynamoDBAttribute
  	private String title;
     
+	@DynamoDBAttribute
+	private String subtitle;
+    
     @DynamoDBAttribute
    	private String img;
 	/**
@@ -64,6 +67,18 @@ public class VideoLink {
 	 */
 	public void setImg(String img) {
 		this.img = img;
+	}
+	/**
+	 * @return the subtitle
+	 */
+	public String getSubtitle() {
+		return subtitle;
+	}
+	/**
+	 * @param subtitle the subtitle to set
+	 */
+	public void setSubtitle(String subtitle) {
+		this.subtitle = subtitle;
 	}
 
 }

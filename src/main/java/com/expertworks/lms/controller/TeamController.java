@@ -36,20 +36,51 @@ public class TeamController {
 
 	@PostMapping("/")
 	public TeamCourses saveCourses(@RequestBody TeamCourses teamCourses) {
+		
+		System.out.println("Request recieved for saveCourses");
 		return teamCoursesRepository.save(teamCourses);
 	}
 	
 	/**
-	 * Get all courses for a Team
+	 * Get all courses for a Team_courses Table
 	 * @return
 	 */
-	@GetMapping("/")
+	@GetMapping("/all")
 	public ApiResponse getTeamCourses() {
 		
          System.out.println("Request received");
 		List<TeamCourses>  courseList = teamCoursesRepository.getTeamCourses();
 		return new ApiResponse(HttpStatus.OK, SUCCESS, courseList);
 	}
+	
+	
+	@GetMapping("/")
+	public ApiResponse getCourses() {
+
+		List<TeamCourses> teamCourses = null;
+		String teamIdinToken = null;
+		System.out.println(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		Object credentials = SecurityContextHolder.getContext().getAuthentication().getCredentials();
+
+		String username = null;
+		if (principal instanceof UserDetails) {
+			username = ((UserDetails) principal).getUsername();
+		} else {
+			username = principal.toString();
+		}
+
+		if (credentials instanceof AuthTokenDetails) {
+			 teamIdinToken = ((AuthTokenDetails) credentials).getTeamId();
+			System.out.println("teamIdinToken : " + teamIdinToken);
+
+		}
+		teamCourses = teamCoursesRepository.getTeamCourses(teamIdinToken);
+    	return new ApiResponse(HttpStatus.OK, SUCCESS, teamCourses);
+	}
+	
+	
+	
 		
 
 	@GetMapping("/{teamId}")

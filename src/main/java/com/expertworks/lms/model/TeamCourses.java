@@ -26,6 +26,12 @@ public class TeamCourses {
 	
 	@DynamoDBAttribute
 	private String title;
+	
+	@DynamoDBAttribute
+	private String subtitle;
+	
+	  @DynamoDBAttribute
+	   	private String img;
 
 	@DynamoDBAttribute
 	private List<VideoLink> videoLinks;
@@ -178,6 +184,34 @@ public class TeamCourses {
 		coursesResponse.setVideoLinks(videoLinks);
 		return coursesResponse;
 		
+	}
+
+	/**
+	 * @return the subtitle
+	 */
+	public String getSubtitle() {
+		return subtitle;
+	}
+
+	/**
+	 * @param subtitle the subtitle to set
+	 */
+	public void setSubtitle(String subtitle) {
+		this.subtitle = subtitle;
+	}
+
+	/**
+	 * @return the img
+	 */
+	public String getImg() {
+		return img;
+	}
+
+	/**
+	 * @param img the img to set
+	 */
+	public void setImg(String img) {
+		this.img = img;
 	}
 
 

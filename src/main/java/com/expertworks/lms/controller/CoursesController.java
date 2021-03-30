@@ -43,7 +43,7 @@ public class CoursesController {
 	@GetMapping("/courses/")
 	public ApiResponse getCourses() {
 
-		List<Courses>  courseList = coursesRepository.getCourses();
+		List<Courses>  courseList = coursesRepository.getAllCourses();
 		return new ApiResponse(HttpStatus.OK, SUCCESS, courseList);
 	}
 		
@@ -75,11 +75,46 @@ public class CoursesController {
 		System.out.println("courseId : " + courseId);
 		System.out.println("teamId : " + teamId);
 
-		courses = coursesRepository.getCourses(courseId);
-
+		List<Courses> list  = coursesRepository.getCourses(courseId);
+		//List list = coursesRepository.getmy1Courses(courseId,"S#1"); 
 	
 
-		return new ApiResponse(HttpStatus.OK, SUCCESS, courses);
+		return new ApiResponse(HttpStatus.OK, SUCCESS, list);
+	}
+
+	
+	@GetMapping("/courses/meta/{courseId}")
+	public ApiResponse getMetaDeatils(@PathVariable("courseId") String courseId) {
+
+		Courses courses = null;
+		System.out.println(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+		Object credentials = SecurityContextHolder.getContext().getAuthentication().getCredentials();
+
+		String username = null;
+		String teamId = null;
+
+		if (principal instanceof UserDetails) {
+			username = ((UserDetails) principal).getUsername();
+		} else {
+			username = principal.toString();
+		}
+
+		if (credentials instanceof AuthTokenDetails) {
+			teamId = ((AuthTokenDetails) credentials).getTeamId();
+
+		}
+
+		System.out.println("UserName : " + username);
+		System.out.println("courseId : " + courseId);
+		System.out.println("teamId : " + teamId);
+
+		List<Courses> list  = coursesRepository.getMeatDetailsCourses(courseId);
+		
+	
+
+		return new ApiResponse(HttpStatus.OK, SUCCESS, list);
 	}
 
 	
@@ -95,3 +130,4 @@ public class CoursesController {
 	}
 
 }
+        

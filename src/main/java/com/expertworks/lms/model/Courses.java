@@ -5,16 +5,21 @@ import java.util.List;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBRangeKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import com.expertworks.lms.http.CoursesResponse;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-@DynamoDBTable(tableName = "CoursesMaster")
+@DynamoDBTable(tableName = "CoursesMaster1")
 
 public class Courses {
 
 	@DynamoDBHashKey
 	private String courseId;
+	
+	@DynamoDBRangeKey  //CustomerBookmark Table referred.
+	private String sk;
+		
 
 	@DynamoDBAttribute
 	private String createDate;
@@ -28,7 +33,7 @@ public class Courses {
 	@DynamoDBAttribute
 	private String img;
 
-	@JsonIgnore
+	//@JsonIgnore
 	@DynamoDBAttribute
 	private List<VideoLink> videoLinks;
 
@@ -183,6 +188,20 @@ public class Courses {
 	 */
 	public void setImg(String img) {
 		this.img = img;
+	}
+
+	/**
+	 * @return the sk
+	 */
+	public String getSk() {
+		return sk;
+	}
+
+	/**
+	 * @param sk the sk to set
+	 */
+	public void setSk(String sk) {
+		this.sk = sk;
 	}
 
 }

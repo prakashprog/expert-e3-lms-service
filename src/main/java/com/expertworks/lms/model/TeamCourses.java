@@ -9,6 +9,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBIndexHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBRangeKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import com.expertworks.lms.http.CoursesResponse;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @DynamoDBTable(tableName = "TeamCourses")
 
@@ -33,6 +34,7 @@ public class TeamCourses {
 	  @DynamoDBAttribute
 	   	private String img;
 
+	 @JsonIgnore
 	@DynamoDBAttribute
 	private List<VideoLink> videoLinks;
 	

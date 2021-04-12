@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,15 +32,14 @@ public class CoursesController {
 	@Autowired
 	private CoursesRepository coursesRepository;
 
-
-
-
+	@CrossOrigin
 	@PostMapping("/courses")
 	public Courses saveCourses(@RequestBody Courses courses) {
 		return coursesRepository.save(courses);
 	}
 	
 	// get all courses
+	@CrossOrigin
 	@GetMapping("/courses/")
 	public ApiResponse getCourses() {
 
@@ -48,6 +48,7 @@ public class CoursesController {
 	}
 		
 
+	@CrossOrigin
 	@GetMapping("/courses/{courseId}")
 	public ApiResponse getCourses(@PathVariable("courseId") String courseId) {
 
@@ -82,7 +83,7 @@ public class CoursesController {
 		return new ApiResponse(HttpStatus.OK, SUCCESS, list);
 	}
 
-	
+	@CrossOrigin
 	@GetMapping("/courses/meta/{courseId}")
 	public ApiResponse getMetaDeatils(@PathVariable("courseId") String courseId) {
 
@@ -118,12 +119,13 @@ public class CoursesController {
 	}
 
 	
-
+	@CrossOrigin
 	@DeleteMapping("/courses/{courseId}")
 	public String deleteCourse(@PathVariable("courseId") String courseId) {
 		return coursesRepository.delete(courseId);
 	}
 
+	@CrossOrigin
 	@PutMapping("/courses/{courseId}")
 	public String updateCourse(@PathVariable("courseId") String courseId, @RequestBody Courses courses) {
 		return coursesRepository.update(courseId, courses);

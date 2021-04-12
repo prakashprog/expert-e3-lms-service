@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,38 +24,40 @@ import com.expertworks.lms.util.AuthTokenDetails;
 //https://github.com/dailycodebuffer/Spring-MVC-Tutorials/tree/master/DynanoDb-SpringBoot-Demo/src/main/java/com/dailycodebuffer
 
 @RestController
-@Component
+@CrossOrigin(origins = "*")
 @RequestMapping("team-courses")
 public class TeamController {
-	
+
 	public static final String SUCCESS = "success";
 
 	@Autowired
 	private TeamCoursesRepository teamCoursesRepository;
 
-
-
 	@PostMapping("/")
+	@CrossOrigin
 	public TeamCourses saveCourses(@RequestBody TeamCourses teamCourses) {
-		
+
 		System.out.println("Request recieved for saveCourses");
 		return teamCoursesRepository.save(teamCourses);
 	}
-	
+
 	/**
 	 * Get all courses for a Team_courses Table
+	 * 
 	 * @return
 	 */
+	@CrossOrigin
 	@GetMapping("/all")
 	public ApiResponse getTeamCourses() {
-		
-         System.out.println("Request received");
-		List<TeamCourses>  courseList = teamCoursesRepository.getTeamCourses();
+
+		System.out.println("Request received");
+		List<TeamCourses> courseList = teamCoursesRepository.getTeamCourses();
 		return new ApiResponse(HttpStatus.OK, SUCCESS, courseList);
 	}
-	
-	
-	@GetMapping("/")
+
+	@CrossOrigin(origins = "*")
+	@GetMapping
+	@RequestMapping(value = "/")
 	public ApiResponse getCourses() {
 
 		List<TeamCourses> teamCourses = null;
@@ -71,18 +74,15 @@ public class TeamController {
 		}
 
 		if (credentials instanceof AuthTokenDetails) {
-			 teamIdinToken = ((AuthTokenDetails) credentials).getTeamId();
+			teamIdinToken = ((AuthTokenDetails) credentials).getTeamId();
 			System.out.println("teamIdinToken : " + teamIdinToken);
 
 		}
 		teamCourses = teamCoursesRepository.getTeamCourses(teamIdinToken);
-    	return new ApiResponse(HttpStatus.OK, SUCCESS, teamCourses);
+		return new ApiResponse(HttpStatus.OK, SUCCESS, teamCourses);
 	}
-	
-	
-	
-		
 
+	@CrossOrigin
 	@GetMapping("/{teamId}")
 	public ApiResponse getCourses(@PathVariable("teamId") String teamId) {
 
@@ -104,9 +104,10 @@ public class TeamController {
 
 		}
 		teamCourses = teamCoursesRepository.getTeamCourses(teamId);
-    	return new ApiResponse(HttpStatus.OK, SUCCESS, teamCourses);
+		return new ApiResponse(HttpStatus.OK, SUCCESS, teamCourses);
 	}
 
+	@CrossOrigin
 	@GetMapping("/teams/{courseId}")
 	public ApiResponse getTeams(@PathVariable("courseId") String courseId) {
 
@@ -128,8 +129,7 @@ public class TeamController {
 
 		}
 		teamCourses = teamCoursesRepository.getTeamCoursesonGSI(courseId);
-    	return new ApiResponse(HttpStatus.OK, SUCCESS, teamCourses);
+		return new ApiResponse(HttpStatus.OK, SUCCESS, teamCourses);
 	}
 
-	
 }

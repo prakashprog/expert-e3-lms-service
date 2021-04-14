@@ -1,11 +1,9 @@
 package com.expertworks.lms.controller;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -23,8 +21,9 @@ import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.iterable.S3Objects;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.expertworks.lms.model.TeamCourses;
 import com.expertworks.lms.model.UserVideos;
 import com.expertworks.lms.model.VideoLink;
@@ -93,17 +92,44 @@ public class LMSController {
 					
 					// SECTION 3: Get file from S3 bucket
 					//
-					S3Object fullObject;
-					fullObject = s3Client.getObject(new GetObjectRequest(bucketName, folderName + "/" + fileNameInS3));
-					System.out.println("--Downloading file done");
-					// Print file content line by line
-					InputStream is = fullObject.getObjectContent();
-					BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-					String line;
-					System.out.println("--File content:");
-					while ((line = reader.readLine()) != null) {
-						System.out.println(line);
-					}
+//					S3Object fullObject;
+//					fullObject = s3Client.getObject(new GetObjectRequest(bucketName, folderName + "/" + fileNameInS3));
+//					System.out.println("--Downloading file done");
+//					// Print file content line by line
+//					InputStream is = fullObject.getObjectContent();
+//					BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+//					String line;
+//					System.out.println("--File content:");
+//					while ((line = reader.readLine()) != null) {
+//						System.out.println(line);
+//					}
+					
+					
+					
+					S3Objects.inBucket(s3Client, "expertlmsbucket").forEach((S3ObjectSummary objectSummary) -> {
+					    // TODO: Consume `objectSummary` the way you need
+						
+						
+					    System.out.println("=======================================");
+					  
+					    System.out.println(objectSummary.getKey());
+					    
+					  
+					 
+	                    
+	                    
+					    
+					    
+					    
+					});
+					
+			
+					   ObjectMetadata objectMetadata = s3Client.getObjectMetadata(bucketName, "test/lambda-java.m3u8");
+	                    Map userMetadataMap = objectMetadata.getUserMetadata();
+	                    
+	                    System.out.println(userMetadataMap);
+	                    
+	                    Map rowMetadataMap = objectMetadata.getRawMetadata();
 
 	
     }

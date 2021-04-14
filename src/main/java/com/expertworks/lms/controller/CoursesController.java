@@ -40,7 +40,7 @@ public class CoursesController {
 	
 	// get all courses
 	@CrossOrigin
-	@GetMapping("/courses/")
+	@GetMapping("/courses")
 	public ApiResponse getCourses() {
 
 		List<Courses>  courseList = coursesRepository.getAllCourses();

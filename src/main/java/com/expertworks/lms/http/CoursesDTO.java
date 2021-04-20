@@ -2,50 +2,25 @@ package com.expertworks.lms.http;
 
 import java.util.List;
 
-import com.expertworks.lms.model.VideoLink;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-
-
-public class CoursesResponse extends BaseResponse {
+public class CoursesDTO {
    
 	
 	private static final long serialVersionUID = -8091879091924046844L;
    
-
-
-	private String teamId;
-
+	
 	private String courseId;
-
+	private String sk;
 	private String createDate;
-	
 	private String title;
+	private String subtitle;
+	private String img;
+    private List<VideoLinkDTO> videoLinkDTO;
 
-	private List<VideoLink> videoLinks;
-	
 	private int totalvidoes;
-	
 	private String s3folder;
-	
 	private String preferences;
 
-	/**
-	 * @return the teamId
-	 */
-	public String getTeamId() {
-		return teamId;
-	}
-
-	/**
-	 * @param teamId the teamId to set
-	 */
-	public void setTeamId(String teamId) {
-		this.teamId = teamId;
-	}
 
 	/**
 	 * @return the courseId
@@ -54,12 +29,30 @@ public class CoursesResponse extends BaseResponse {
 		return courseId;
 	}
 
+
 	/**
 	 * @param courseId the courseId to set
 	 */
 	public void setCourseId(String courseId) {
 		this.courseId = courseId;
 	}
+
+
+	/**
+	 * @return the sk
+	 */
+	public String getSk() {
+		return sk;
+	}
+
+
+	/**
+	 * @param sk the sk to set
+	 */
+	public void setSk(String sk) {
+		this.sk = sk;
+	}
+
 
 	/**
 	 * @return the createDate
@@ -68,12 +61,14 @@ public class CoursesResponse extends BaseResponse {
 		return createDate;
 	}
 
+
 	/**
 	 * @param createDate the createDate to set
 	 */
 	public void setCreateDate(String createDate) {
 		this.createDate = createDate;
 	}
+
 
 	/**
 	 * @return the title
@@ -82,6 +77,7 @@ public class CoursesResponse extends BaseResponse {
 		return title;
 	}
 
+
 	/**
 	 * @param title the title to set
 	 */
@@ -89,19 +85,54 @@ public class CoursesResponse extends BaseResponse {
 		this.title = title;
 	}
 
-	/**
-	 * @return the videoLinks
-	 */
-	public List<VideoLink> getVideoLinks() {
-		return videoLinks;
-	}
 
 	/**
-	 * @param videoLinks the videoLinks to set
+	 * @return the subtitle
 	 */
-	public void setVideoLinks(List<VideoLink> videoLinks) {
-		this.videoLinks = videoLinks;
+	public String getSubtitle() {
+		return subtitle;
 	}
+
+
+	/**
+	 * @param subtitle the subtitle to set
+	 */
+	public void setSubtitle(String subtitle) {
+		this.subtitle = subtitle;
+	}
+
+
+	/**
+	 * @return the img
+	 */
+	public String getImg() {
+		return img;
+	}
+
+
+	/**
+	 * @param img the img to set
+	 */
+	public void setImg(String img) {
+		this.img = img;
+	}
+
+
+	/**
+	 * @return the videoLinkDTO
+	 */
+	public List<VideoLinkDTO> getVideoLinkDTO() {
+		return videoLinkDTO;
+	}
+
+
+	/**
+	 * @param videoLinkDTO the videoLinkDTO to set
+	 */
+	public void setVideoLinkDTO(List<VideoLinkDTO> videoLinkDTO) {
+		this.videoLinkDTO = videoLinkDTO;
+	}
+
 
 	/**
 	 * @return the totalvidoes
@@ -110,12 +141,14 @@ public class CoursesResponse extends BaseResponse {
 		return totalvidoes;
 	}
 
+
 	/**
 	 * @param totalvidoes the totalvidoes to set
 	 */
 	public void setTotalvidoes(int totalvidoes) {
 		this.totalvidoes = totalvidoes;
 	}
+
 
 	/**
 	 * @return the s3folder
@@ -124,12 +157,14 @@ public class CoursesResponse extends BaseResponse {
 		return s3folder;
 	}
 
+
 	/**
 	 * @param s3folder the s3folder to set
 	 */
 	public void setS3folder(String s3folder) {
 		this.s3folder = s3folder;
 	}
+
 
 	/**
 	 * @return the preferences
@@ -138,6 +173,7 @@ public class CoursesResponse extends BaseResponse {
 		return preferences;
 	}
 
+
 	/**
 	 * @param preferences the preferences to set
 	 */
@@ -145,13 +181,13 @@ public class CoursesResponse extends BaseResponse {
 		this.preferences = preferences;
 	}
 
+
 	/**
 	 * @return the serialversionuid
 	 */
 	public static long getSerialversionuid() {
 		return serialVersionUID;
 	}
-	
 	
 	
 	

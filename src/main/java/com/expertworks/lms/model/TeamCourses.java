@@ -8,7 +8,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBIndexHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBRangeKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
-import com.expertworks.lms.http.CoursesResponse;
+import com.expertworks.lms.http.CoursesDTO;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @DynamoDBTable(tableName = "TeamCourses")
@@ -168,25 +168,7 @@ public class TeamCourses {
 
 
 	
-	public CoursesResponse  toCourseResponse() {
-		
-		CoursesResponse coursesResponse = new CoursesResponse();
-			
-		coursesResponse.setTeamId(this.teamId);
-		coursesResponse.setCourseId(this.courseId);
-		coursesResponse.setCreateDate(this.createDate);
-		coursesResponse.setPreferences(this.preferences);
-		coursesResponse.setS3folder(this.s3folder);
-		coursesResponse.setTitle(this.title);
-		List<VideoLink> videoLinks = new ArrayList<VideoLink>();
 	
-		for(VideoLink videoLink : getVideoLinks()) {
-			videoLinks.add(videoLink);
-		}	
-		coursesResponse.setVideoLinks(videoLinks);
-		return coursesResponse;
-		
-	}
 
 	/**
 	 * @return the subtitle

@@ -57,7 +57,7 @@ public class LMSController {
 		
 		// SECTION 1 OPTION 1: Create a S3 client with in-program credential
 					//
-					BasicAWSCredentials awsCreds = new BasicAWSCredentials("AKIAICA6BPBY7WQN3HNA", "ksVBuEydnYl6T0Gc60wDSuZDkks+dzXQMiokOQtU");
+					BasicAWSCredentials awsCreds = new BasicAWSCredentials("AKIAZTGOLXTIJKYEGYJZ", "dQpVi/VwGUeydrMVzGyUUWKg885goDEFe+fitch/");
 					// us-west-2 is AWS Oregon
 					AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion("ap-south-1").withCredentials(new AWSStaticCredentialsProvider(awsCreds))
 							.build();
@@ -68,7 +68,7 @@ public class LMSController {
 
 					// SECTION 2: Put file in S3 bucket
 					//
-		String bucketName = "expertlmsbucket";
+					String bucketName = "expertlmsbucket";
 					String folderName = "folder1";
 					//String fileNameInS3 = "javaFile123.txt";
 					String fileNameInS3 = "sample-mp4-file.mp4";
@@ -111,7 +111,7 @@ public class LMSController {
 						
 						
 					    System.out.println("=======================================");
-					  
+			
 					    System.out.println(objectSummary.getKey());
 					    
 					  
@@ -124,12 +124,12 @@ public class LMSController {
 					});
 					
 			
-					   ObjectMetadata objectMetadata = s3Client.getObjectMetadata(bucketName, "test/lambda-java.m3u8");
-	                    Map userMetadataMap = objectMetadata.getUserMetadata();
-	                    
-	                    System.out.println(userMetadataMap);
-	                    
-	                    Map rowMetadataMap = objectMetadata.getRawMetadata();
+//					   ObjectMetadata objectMetadata = s3Client.getObjectMetadata(bucketName, "test/lambda-java.m3u8");
+//	                    Map userMetadataMap = objectMetadata.getUserMetadata();
+//	                    
+//	                    System.out.println(userMetadataMap);
+//	                    
+//	                    Map rowMetadataMap = objectMetadata.getRawMetadata();
 
 	
     }

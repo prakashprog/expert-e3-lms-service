@@ -7,8 +7,8 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBRangeKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
-import com.expertworks.lms.http.CoursesResponse;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.expertworks.lms.http.CoursesDTO;
+import com.expertworks.lms.http.VideoLinkDTO;
 
 @DynamoDBTable(tableName = "CoursesMaster1")
 
@@ -16,10 +16,10 @@ public class Courses {
 
 	@DynamoDBHashKey
 	private String courseId;
-	
-	@DynamoDBRangeKey  //CustomerBookmark Table referred.
+
+	@DynamoDBRangeKey // CustomerBookmark Table referred.
 	private String sk;
-		
+
 
 	@DynamoDBAttribute
 	private String createDate;
@@ -33,7 +33,7 @@ public class Courses {
 	@DynamoDBAttribute
 	private String img;
 
-	//@JsonIgnore
+	// @JsonIgnore
 	@DynamoDBAttribute
 	private List<VideoLink> videoLinks;
 
@@ -46,6 +46,7 @@ public class Courses {
 	@DynamoDBAttribute
 	private String preferences;
 
+	
 	/**
 	 * @return the courseId
 	 */
@@ -144,21 +145,22 @@ public class Courses {
 		this.videoLinks = videoLinks;
 	}
 
-	public CoursesResponse toCourseResponse() {
+	public CoursesDTO toCourseDTO() {
 
-		CoursesResponse coursesResponse = new CoursesResponse();
-		coursesResponse.setCourseId(this.courseId);
-		coursesResponse.setCreateDate(this.createDate);
-		coursesResponse.setPreferences(this.preferences);
-		coursesResponse.setS3folder(this.s3folder);
-		coursesResponse.setTitle(this.title);
-		List<VideoLink> videoLinks = new ArrayList<VideoLink>();
+		CoursesDTO coursesDTO = new CoursesDTO();
+		coursesDTO.setCourseId(this.courseId);
+		coursesDTO.setCreateDate(this.createDate);
+		coursesDTO.setPreferences(this.preferences);
+		coursesDTO.setS3folder(this.s3folder);
+		coursesDTO.setTitle(this.title);
+		List<VideoLinkDTO> videoLinkDTOList = new ArrayList<VideoLinkDTO>();
 
 		for (VideoLink videoLink : getVideoLinks()) {
-			videoLinks.add(videoLink);
+			
+			videoLinkDTOList.add(videoLink.toVideoLinkDTO());
 		}
-		coursesResponse.setVideoLinks(videoLinks);
-		return coursesResponse;
+		coursesDTO.setVideoLinkDTO(videoLinkDTOList);
+		return coursesDTO;
 
 	}
 
@@ -204,4 +206,5 @@ public class Courses {
 		this.sk = sk;
 	}
 
+	
 }

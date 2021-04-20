@@ -2,6 +2,7 @@ package com.expertworks.lms.model;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument;
+import com.expertworks.lms.http.VideoLinkDTO;
 
 @DynamoDBDocument
 public class VideoLink {
@@ -81,4 +82,18 @@ public class VideoLink {
 		this.subtitle = subtitle;
 	}
 
+	public VideoLinkDTO toVideoLinkDTO()
+	{
+		VideoLinkDTO videoLinkDTO = new VideoLinkDTO();
+		
+		videoLinkDTO.setUrl(this.url);
+		videoLinkDTO.setType(this.type);
+		videoLinkDTO.setTitle(this.title);
+		videoLinkDTO.setSubtitle(this.subtitle);
+		videoLinkDTO.setImg(this.img);
+		
+		return videoLinkDTO;
+	}
+	
+	
 }

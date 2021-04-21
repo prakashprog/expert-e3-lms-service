@@ -1,5 +1,7 @@
 package com.expertworks.lms.controller;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,14 +80,16 @@ public class CoursesController {
 		System.out.println("teamId : " + teamId);
 
 		List<Courses> list = coursesRepository.getCourses(courseId);
+		List<CoursesDTO> courseDTOList= new ArrayList();
 		
 		for(Courses item : list)
 		{
 			CoursesDTO courseDTO = item.toCourseDTO();
+			courseDTOList.add(courseDTO);
 		}
 		
-	
-		return new ApiResponse(HttpStatus.OK, SUCCESS, list);
+	    Collections.sort(courseDTOList);
+		return new ApiResponse(HttpStatus.OK, SUCCESS, courseDTOList);
 	}
 
 	@CrossOrigin

@@ -3,7 +3,7 @@ package com.expertworks.lms.http;
 import java.util.List;
 
 
-public class CoursesDTO {
+public class CoursesDTO  implements Comparable<CoursesDTO> {
    
 	
 	private static final long serialVersionUID = -8091879091924046844L;
@@ -15,13 +15,19 @@ public class CoursesDTO {
 	private String title;
 	private String subtitle;
 	private String img;
-    private List<VideoLinkDTO> videoLinkDTO;
+    private List<VideoLinkDTO> videoLinks;
 
 	private int totalvidoes;
 	private String s3folder;
 	private String preferences;
 
-
+	 public int compareTo(CoursesDTO coursesDTO) {  
+		    return Integer.parseInt(sk.substring(2))- Integer.parseInt(coursesDTO.sk.substring(2));  
+		    
+		 
+		  }   
+	
+	
 	/**
 	 * @return the courseId
 	 */
@@ -118,20 +124,7 @@ public class CoursesDTO {
 	}
 
 
-	/**
-	 * @return the videoLinkDTO
-	 */
-	public List<VideoLinkDTO> getVideoLinkDTO() {
-		return videoLinkDTO;
-	}
 
-
-	/**
-	 * @param videoLinkDTO the videoLinkDTO to set
-	 */
-	public void setVideoLinkDTO(List<VideoLinkDTO> videoLinkDTO) {
-		this.videoLinkDTO = videoLinkDTO;
-	}
 
 
 	/**
@@ -187,6 +180,22 @@ public class CoursesDTO {
 	 */
 	public static long getSerialversionuid() {
 		return serialVersionUID;
+	}
+
+
+	/**
+	 * @return the videoLinks
+	 */
+	public List<VideoLinkDTO> getVideoLinks() {
+		return videoLinks;
+	}
+
+
+	/**
+	 * @param videoLinks the videoLinks to set
+	 */
+	public void setVideoLinks(List<VideoLinkDTO> videoLinks) {
+		this.videoLinks = videoLinks;
 	}
 	
 	

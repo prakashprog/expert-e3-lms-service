@@ -12,7 +12,7 @@ import com.expertworks.lms.http.VideoLinkDTO;
 
 @DynamoDBTable(tableName = "CoursesMaster1")
 
-public class Courses {
+public class Courses implements Comparable<Courses>{
 
 	@DynamoDBHashKey
 	private String courseId;
@@ -47,6 +47,10 @@ public class Courses {
 	private String preferences;
 
 	
+	  public int compareTo(Courses courses) {  
+		    return sk.compareTo(courses.sk);  
+		      
+		  }   
 	/**
 	 * @return the courseId
 	 */
@@ -149,17 +153,21 @@ public class Courses {
 
 		CoursesDTO coursesDTO = new CoursesDTO();
 		coursesDTO.setCourseId(this.courseId);
-		coursesDTO.setCreateDate(this.createDate);
+		coursesDTO.setSk(this.sk);
 		coursesDTO.setPreferences(this.preferences);
 		coursesDTO.setS3folder(this.s3folder);
+		coursesDTO.setTotalvidoes(this.totalvidoes);
 		coursesDTO.setTitle(this.title);
+		coursesDTO.setSubtitle(this.subtitle);
+		coursesDTO.setImg(this.img);
+		coursesDTO.setCreateDate(this.createDate);
 		List<VideoLinkDTO> videoLinkDTOList = new ArrayList<VideoLinkDTO>();
 
 		for (VideoLink videoLink : getVideoLinks()) {
 			
 			videoLinkDTOList.add(videoLink.toVideoLinkDTO());
 		}
-		coursesDTO.setVideoLinkDTO(videoLinkDTOList);
+		coursesDTO.setVideoLinks(videoLinkDTOList);
 		return coursesDTO;
 
 	}

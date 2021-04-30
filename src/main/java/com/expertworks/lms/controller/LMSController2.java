@@ -81,7 +81,7 @@ public class LMSController2 {
 		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 
 		String distributionDomain = "d3s24np0er9fug.cloudfront.net";
-		String privateKeyFilePath = "C:\\expertworks\\cloudfrontkeys\\pk-APKAIXDUZ5ZQ4EQM4P6Q.der";
+		String privateKeyFilePath = "D:\\expertworks\\cloudfrontkeys\\pk-APKAIXDUZ5ZQ4EQM4P6Q.der";
 		//String s3ObjectKey = "hls3.html";
 		// String s3ObjectKey = "sample-mp4-file.mp4";
 

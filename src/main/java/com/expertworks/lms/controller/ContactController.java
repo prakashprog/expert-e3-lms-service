@@ -28,7 +28,7 @@ public class ContactController {
 	private ContactRepository contactRepository;
 
 	@CrossOrigin
-	@PostMapping("/contactus")
+	@PostMapping("public/contactus")
 	public ApiResponse save(@RequestBody Contact contact) {
 		
 		System.out.println("Request Recieved in contactus");

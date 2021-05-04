@@ -1,23 +1,23 @@
 package com.expertworks.lms.http;
 
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
+import java.util.List;
+
+
 
 public class VideoLinkDTO {
 	
 
 		private String url;
-	    
-	  
+	      
 		private String type;
-		
-	   
+		   
 	 	private String title;
 	    
-	
 		private String subtitle;
-	    
-	
+	    	
 	   	private String img;
+	   	
+	    private List<ResourceLinkDTO> resourceLinks;
 
 
 		/**
@@ -97,6 +97,16 @@ public class VideoLinkDTO {
 		 */
 		public void setImg(String img) {
 			this.img = img;
+		}
+
+
+		public List<ResourceLinkDTO> getResourceLinks() {
+			return resourceLinks;
+		}
+
+
+		public void setResourceLinks(List<ResourceLinkDTO> resourceLinks) {
+			this.resourceLinks = resourceLinks;
 		}
 
 }

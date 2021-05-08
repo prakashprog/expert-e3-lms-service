@@ -88,6 +88,7 @@ public class LMSController2 {
 		//String s3ObjectKey = "folder1/sample-mp4-file.m3u8";
 		String s3ObjectKey = "folder1/sample-mp4-file_1.m3u8";
 		
+		
 
 		// String s3ObjectKey = "folder1/sample-mp4-file_1_00001.ts";
 		// String policyResourcePath = "https://" + distributionDomain + "/" +
@@ -133,7 +134,7 @@ public class LMSController2 {
 		//https://aws.amazon.com/blogs/developer/serving-private-content-through-amazon-cloudfront-using-signed-cookies/#:~:text=Canned%20policies%20allow%20you%20to,Custom%20Policies%20for%20Signed%20Cookies.
 		//for wild card serches  s3ObjectKey
 		CookiesForCustomPolicy cookies = CloudFrontCookieSigner.getCookiesForCustomPolicy(SignerUtils.Protocol.https,
-				distributionDomain, new File(privateKeyFilePath), "folder1/*", "APKAIXDUZ5ZQ4EQM4P6Q", expiresOn,
+				distributionDomain, new File(privateKeyFilePath), "phase1/*", "APKAIXDUZ5ZQ4EQM4P6Q", expiresOn,
 				activeFrom, ipRange);
 
 		// https://a1010100z.tistory.com/142
@@ -173,7 +174,7 @@ public class LMSController2 {
 		
 		//String url = "https://" + distributionDomain + "/" + "folder1/sample-mp4-file_1_00001.ts"; 
 		//String url = "https://" + distributionDomain + "/" + "folder1/sample-mp4-file.m3u8"; 
-		String url = "https://" + distributionDomain + "/" + "folder1/hls3.html"; 
+		String url = "https://" + distributionDomain + "/" + "phase1/hls3.html"; 
 
 		ResponseEntity response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity(headers), String.class);
 		System.out.println("======================================");

@@ -10,6 +10,8 @@ import com.expertworks.lms.http.VideoLinkDTO;
 
 @DynamoDBDocument
 public class VideoLink {
+	
+	
 
 	@DynamoDBAttribute
 	private String url;

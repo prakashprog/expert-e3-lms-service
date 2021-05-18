@@ -8,6 +8,9 @@ public class AuthTokenDetails {
 	private String teamId;
 	
 	private String groupId;
+	
+	private String sub;
+	
 
 	/**
 	 * @return the partnerId
@@ -49,6 +52,14 @@ public class AuthTokenDetails {
 	 */
 	public void setGroupId(String groupId) {
 		this.groupId = groupId;
+	}
+
+	public String getSub() {
+		return sub;
+	}
+
+	public void setSub(String sub) {
+		this.sub = sub;
 	}
 	
 

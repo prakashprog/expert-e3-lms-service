@@ -49,6 +49,8 @@ public class CoursesRepository {
 
 	}
 
+	/**get all records with starting with C#**/
+	
 	public List<Courses> getAllCourses() {
 		DynamoDBScanExpression scanExpression = new DynamoDBScanExpression().withLimit(100);
 		PaginatedScanList<Courses> paginatedScanList = dynamoDBMapper.scan(Courses.class, scanExpression);
@@ -91,7 +93,8 @@ public class CoursesRepository {
 		return list;
 	}
 	
-	  public List<Courses> getMeatDetailsCourses(String courseId) {
+	
+	  public List<Courses> getMetaDetailsCourses(String courseId) {
 		
 		Courses courses = new Courses();
 		courses.setCourseId(courseId);  

@@ -2,6 +2,9 @@ package com.expertworks.lms.http;
 
 import java.util.List;
 
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 
 public class CoursesDTO  implements Comparable<CoursesDTO> {
    
@@ -16,10 +19,13 @@ public class CoursesDTO  implements Comparable<CoursesDTO> {
 	private String subtitle;
 	private String img;
     private List<VideoLinkDTO> videoLinks;
-
+    private float  percentage;
 	private int totalvidoes;
 	private String s3folder;
-	private String preferences;
+	@JsonIgnore
+	private String type;
+	@JsonIgnore
+	private String level;
 
 	 public int compareTo(CoursesDTO coursesDTO) {  
 		    return Integer.parseInt(sk.substring(2))- Integer.parseInt(coursesDTO.sk.substring(2));  
@@ -159,20 +165,7 @@ public class CoursesDTO  implements Comparable<CoursesDTO> {
 	}
 
 
-	/**
-	 * @return the preferences
-	 */
-	public String getPreferences() {
-		return preferences;
-	}
-
-
-	/**
-	 * @param preferences the preferences to set
-	 */
-	public void setPreferences(String preferences) {
-		this.preferences = preferences;
-	}
+	
 
 
 	/**
@@ -197,10 +190,40 @@ public class CoursesDTO  implements Comparable<CoursesDTO> {
 	public void setVideoLinks(List<VideoLinkDTO> videoLinks) {
 		this.videoLinks = videoLinks;
 	}
+
+
+	public float getPercentage() {
+		return percentage;
+	}
+
+
+	public void setPercentage(float percentage) {
+		this.percentage = percentage;
+	}
+
+
+	public String getType() {
+		return type;
+	}
+
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+
+	public String getLevel() {
+		return level;
+	}
+
+
+	public void setLevel(String level) {
+		this.level = level;
+	}
+
+
 	
-	
-	
-	
-	
+
+
 	
 }

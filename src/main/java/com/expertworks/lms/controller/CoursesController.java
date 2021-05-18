@@ -20,9 +20,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.expertworks.lms.http.ApiResponse;
 import com.expertworks.lms.http.CoursesDTO;
+import com.expertworks.lms.http.CoursesDetailsDTO;
+import com.expertworks.lms.http.VideoLinkDTO;
 import com.expertworks.lms.model.Courses;
-import com.expertworks.lms.model.VideoLink;
+import com.expertworks.lms.model.UserDetail;
 import com.expertworks.lms.repository.CoursesRepository;
+import com.expertworks.lms.repository.UserDetailsRepository;
 import com.expertworks.lms.util.AuthTokenDetails;
 
 //https://github.com/dailycodebuffer/Spring-MVC-Tutorials/tree/master/DynanoDb-SpringBoot-Demo/src/main/java/com/dailycodebuffer
@@ -35,6 +38,9 @@ public class CoursesController {
 
 	@Autowired
 	private CoursesRepository coursesRepository;
+
+	@Autowired
+	private UserDetailsRepository userDetailsRepository;
 
 	@CrossOrigin
 	@PostMapping("/courses")
@@ -63,6 +69,7 @@ public class CoursesController {
 
 		String username = null;
 		String teamId = null;
+		String userId = null;
 
 		if (principal instanceof UserDetails) {
 			username = ((UserDetails) principal).getUsername();
@@ -72,25 +79,97 @@ public class CoursesController {
 
 		if (credentials instanceof AuthTokenDetails) {
 			teamId = ((AuthTokenDetails) credentials).getTeamId();
+			userId = ((AuthTokenDetails) credentials).getSub();
 
 		}
 
 		System.out.println("UserName : " + username);
 		System.out.println("courseId : " + courseId);
 		System.out.println("teamId : " + teamId);
+		System.out.println("sub : " + userId);
 
 		List<Courses> list = coursesRepository.getCourses(courseId);
-		List<CoursesDTO> courseDTOList= new ArrayList();
-		
-		for(Courses item : list)
-		{
+		List<CoursesDTO> courseDTOList = new ArrayList();
+
+		for (Courses item : list) {
 			CoursesDTO courseDTO = item.toCourseDTO();
 			courseDTOList.add(courseDTO);
 		}
-		
-	    Collections.sort(courseDTOList);
+
+		Collections.sort(courseDTOList);
 		return new ApiResponse(HttpStatus.OK, SUCCESS, courseDTOList);
 	}
+	
+	
+	
+	@CrossOrigin
+	@GetMapping("/tmp/courses/{courseId}")
+	public ApiResponse gettmpCourses(@PathVariable("courseId") String courseId) {
+
+		
+		System.out.println(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+		Object credentials = SecurityContextHolder.getContext().getAuthentication().getCredentials();
+
+		String username = null;
+		String teamId = null;
+		String userId = null;
+
+		if (principal instanceof UserDetails) {
+			username = ((UserDetails) principal).getUsername();
+		} else {
+			username = principal.toString();
+		}
+
+		if (credentials instanceof AuthTokenDetails) {
+			teamId = ((AuthTokenDetails) credentials).getTeamId();
+			userId = ((AuthTokenDetails) credentials).getSub();
+
+		}
+
+		System.out.println("UserName : " + username);
+		System.out.println("courseId : " + courseId);
+		System.out.println("teamId : " + teamId);
+		System.out.println("sub : " + userId);
+        
+		//get all rows start with S#
+		List<Courses> list = coursesRepository.getCourses(courseId);
+		List<CoursesDTO> courseDTOList = new ArrayList();
+
+		for (Courses item : list) {
+			CoursesDTO courseDTO = item.toCourseDTO();
+			courseDTOList.add(courseDTO);
+		}
+
+		Collections.sort(courseDTOList);
+
+		/** ------------to get percentage of course completed---------------------/ **/
+		List<UserDetail> userDetailList = userDetailsRepository.get(userId, "C#" + courseId);
+		int videosCount = courseDTOList.size(); // as each section has one video
+		int videoscompleted = userDetailList.size();
+		System.out.println("videosCount :" + videosCount);
+		System.out.println("videoscompleted :" + videoscompleted);
+		float percentage=0;
+		if (videoscompleted > 0) {
+          	percentage = (float) videoscompleted / videosCount;	
+		}
+		/** ------------to get percentage of course completed---------------------/ **/
+		
+		List<Courses> coursesMetaList = coursesRepository.getMetaDetailsCourses(courseId);
+		Courses courselevel = coursesMetaList.get(0);
+		CoursesDetailsDTO coursesDetailsDTO  = new CoursesDetailsDTO();
+		coursesDetailsDTO.setSections(courseDTOList);
+		coursesDetailsDTO.setPercentage(percentage);
+		coursesDetailsDTO.setLevel(courselevel.getLevel());
+		coursesDetailsDTO.setType(courselevel.getType());
+		return new ApiResponse(HttpStatus.OK, SUCCESS, coursesDetailsDTO);
+	}
+	
+	
+	
+	
+	
 
 	@CrossOrigin
 	@GetMapping("/public/courses/{courseId}")
@@ -121,59 +200,42 @@ public class CoursesController {
 		System.out.println("teamId : " + teamId);
 
 		List<Courses> sectionList = coursesRepository.getCourses(courseId);
+		List<CoursesDTO> courseDTOList = new ArrayList();
 
-		for (Courses section : sectionList) {
+		for (Courses item : sectionList) {
+			CoursesDTO courseDTO = item.toCourseDTO();
+			courseDTOList.add(courseDTO);
+		}
 
-			List<VideoLink> videolinkList = section.getVideoLinks();
+		Collections.sort(courseDTOList);
 
-			if (section.getSk().equalsIgnoreCase("S#1")) {
+		for (CoursesDTO section : courseDTOList) {
+
+			List<VideoLinkDTO> videolinkList = section.getVideoLinks();
+
+			if (section == courseDTOList.get(0)) {
 
 				for (int i = 0; i < videolinkList.size(); i++) {
 					if (i != 0) {
-						VideoLink videoLink = videolinkList.get(i);
+						VideoLinkDTO videoLink = videolinkList.get(i);
 						videoLink.setUrl(null);
 					}
 				}
 
 			} else
-				for (VideoLink videoLink : videolinkList)
+				for (VideoLinkDTO videoLink : videolinkList)
 					videoLink.setUrl(null);
 
 		}
 
-		return new ApiResponse(HttpStatus.OK, SUCCESS, sectionList);
+		return new ApiResponse(HttpStatus.OK, SUCCESS, courseDTOList);
 	}
 
 	@CrossOrigin
 	@GetMapping("/courses/meta/{courseId}")
 	public ApiResponse getMetaDeatils(@PathVariable("courseId") String courseId) {
 
-		Courses courses = null;
-		System.out.println(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
-		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-		Object credentials = SecurityContextHolder.getContext().getAuthentication().getCredentials();
-
-		String username = null;
-		String teamId = null;
-
-		if (principal instanceof UserDetails) {
-			username = ((UserDetails) principal).getUsername();
-		} else {
-			username = principal.toString();
-		}
-
-		if (credentials instanceof AuthTokenDetails) {
-			teamId = ((AuthTokenDetails) credentials).getTeamId();
-
-		}
-
-		System.out.println("UserName : " + username);
-		System.out.println("courseId : " + courseId);
-		System.out.println("teamId : " + teamId);
-
-		List<Courses> list = coursesRepository.getMeatDetailsCourses(courseId);
-
+    	List<Courses> list = coursesRepository.getMetaDetailsCourses(courseId);
 		return new ApiResponse(HttpStatus.OK, SUCCESS, list);
 	}
 

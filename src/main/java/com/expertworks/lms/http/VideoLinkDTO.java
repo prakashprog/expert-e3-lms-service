@@ -7,6 +7,8 @@ import java.util.List;
 public class VideoLinkDTO {
 	
 
+	    private String vid ;
+	
 		private String url;
 	      
 		private String type;
@@ -16,6 +18,10 @@ public class VideoLinkDTO {
 		private String subtitle;
 	    	
 	   	private String img;
+	   	
+	   	private String status;
+	   	
+		private String courseId;
 	   	
 	    private List<ResourceLinkDTO> resourceLinks;
 
@@ -107,6 +113,36 @@ public class VideoLinkDTO {
 
 		public void setResourceLinks(List<ResourceLinkDTO> resourceLinks) {
 			this.resourceLinks = resourceLinks;
+		}
+
+
+		public String getVid() {
+			return vid;
+		}
+
+
+		public void setVid(String vid) {
+			this.vid = vid;
+		}
+
+
+		public String getStatus() {
+			return status;
+		}
+
+
+		public void setStatus(String status) {
+			this.status = status;
+		}
+
+
+		public String getCourseId() {
+			return courseId;
+		}
+
+
+		public void setCourseId(String courseId) {
+			this.courseId = courseId;
 		}
 
 }

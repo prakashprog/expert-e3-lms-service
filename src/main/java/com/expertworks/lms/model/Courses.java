@@ -32,6 +32,8 @@ public class Courses implements Comparable<Courses>{
 
 	@DynamoDBAttribute
 	private String img;
+	
+	
 
 	// @JsonIgnore
 	@DynamoDBAttribute
@@ -44,7 +46,12 @@ public class Courses implements Comparable<Courses>{
 	private String s3folder;
 
 	@DynamoDBAttribute
-	private String preferences;
+	private String type;
+	
+	@DynamoDBAttribute
+	private String level;
+	
+
 
 	
 	  public int compareTo(Courses courses) {  
@@ -107,19 +114,7 @@ public class Courses implements Comparable<Courses>{
 		this.s3folder = s3folder;
 	}
 
-	/**
-	 * @return the preferences
-	 */
-	public String getPreferences() {
-		return preferences;
-	}
-
-	/**
-	 * @param preferences the preferences to set
-	 */
-	public void setPreferences(String preferences) {
-		this.preferences = preferences;
-	}
+	
 
 	/**
 	 * @return the totalvidoes
@@ -154,7 +149,8 @@ public class Courses implements Comparable<Courses>{
 		CoursesDTO coursesDTO = new CoursesDTO();
 		coursesDTO.setCourseId(this.courseId);
 		coursesDTO.setSk(this.sk);
-		coursesDTO.setPreferences(this.preferences);
+		coursesDTO.setType(this.type);
+		coursesDTO.setLevel(this.level);
 		coursesDTO.setS3folder(this.s3folder);
 		coursesDTO.setTotalvidoes(this.totalvidoes);
 		coursesDTO.setTitle(this.title);
@@ -212,6 +208,18 @@ public class Courses implements Comparable<Courses>{
 	 */
 	public void setSk(String sk) {
 		this.sk = sk;
+	}
+	public String getType() {
+		return type;
+	}
+	public void setType(String type) {
+		this.type = type;
+	}
+	public String getLevel() {
+		return level;
+	}
+	public void setLevel(String level) {
+		this.level = level;
 	}
 
 	

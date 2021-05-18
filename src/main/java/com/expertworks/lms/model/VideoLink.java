@@ -11,7 +11,8 @@ import com.expertworks.lms.http.VideoLinkDTO;
 @DynamoDBDocument
 public class VideoLink {
 	
-	
+	@DynamoDBAttribute
+	private String vid;
 
 	@DynamoDBAttribute
 	private String url;
@@ -27,6 +28,9 @@ public class VideoLink {
 
 	@DynamoDBAttribute
 	private String img;
+	
+	@DynamoDBAttribute
+	private String status;
 
 	@DynamoDBAttribute
 	private List<ResourceLink> resourceLinks;
@@ -114,6 +118,8 @@ public class VideoLink {
 		videoLinkDTO.setTitle(this.title);
 		videoLinkDTO.setSubtitle(this.subtitle);
 		videoLinkDTO.setImg(this.img);
+		videoLinkDTO.setVid(this.vid);
+		videoLinkDTO.setStatus(this.status);
 
 		// convert resources link model to DTO
 		List<ResourceLinkDTO> resourceLinkDTOList = new ArrayList<ResourceLinkDTO>();
@@ -125,6 +131,22 @@ public class VideoLink {
 		videoLinkDTO.setResourceLinks(resourceLinkDTOList);
 
 		return videoLinkDTO;
+	}
+
+	public String getVid() {
+		return vid;
+	}
+
+	public void setVid(String vid) {
+		this.vid = vid;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 }

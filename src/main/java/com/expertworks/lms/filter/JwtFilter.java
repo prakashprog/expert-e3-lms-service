@@ -48,11 +48,12 @@ public class JwtFilter extends OncePerRequestFilter {
 
 				Claims claims = jwtUtil.extractAllClaims(token);
 
-				// System.out.println(claims.get("PartnerId", String.class));
+				 System.out.println("sub:"+ claims.get("sub", String.class));
 
 				authTokenDetails = new AuthTokenDetails();
 				authTokenDetails.setPartnerId(claims.get("PartnerId", String.class));
 				authTokenDetails.setTeamId(claims.get("TeamId", String.class));
+				authTokenDetails.setSub(claims.get("sub", String.class));
 			}
 
 			if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {

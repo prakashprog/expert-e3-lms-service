@@ -94,6 +94,7 @@ public class CoursesRepository {
 	}
 	
 	
+	//pk = courseId & sortkey = Beginswith C#
 	  public List<Courses> getMetaDetailsCourses(String courseId) {
 		
 		Courses courses = new Courses();

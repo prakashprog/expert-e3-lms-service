@@ -56,6 +56,15 @@ public class CoursesController {
 		List<Courses> courseList = coursesRepository.getAllCourses();
 		return new ApiResponse(HttpStatus.OK, SUCCESS, courseList);
 	}
+	
+	// get all courses
+	@CrossOrigin
+	@GetMapping("/public/courses")
+	public ApiResponse getallCourses() {
+
+		List<Courses> courseList = coursesRepository.getAllCourses();
+		return new ApiResponse(HttpStatus.OK, SUCCESS, courseList);
+	}
 
 	@CrossOrigin
 	@GetMapping("/courses/{courseId}")
@@ -144,7 +153,7 @@ public class CoursesController {
 
 		Collections.sort(courseDTOList);
 
-		/** ------------to get percentage of course completed---------------------/ **/
+		/** -----to get percentage of course completed---userId and start with C#courseId------ **/
 		List<UserDetail> userDetailList = userDetailsRepository.get(userId, "C#" + courseId);
 		int videosCount = courseDTOList.size(); // as each section has one video
 		int videoscompleted = userDetailList.size();
@@ -163,6 +172,7 @@ public class CoursesController {
 		coursesDetailsDTO.setPercentage(percentage);
 		coursesDetailsDTO.setLevel(courselevel.getLevel());
 		coursesDetailsDTO.setType(courselevel.getType());
+		coursesDetailsDTO.setCourseId(courseId);
 		return new ApiResponse(HttpStatus.OK, SUCCESS, coursesDetailsDTO);
 	}
 	

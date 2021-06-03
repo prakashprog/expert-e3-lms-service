@@ -5,9 +5,13 @@ import java.util.List;
 
 public class CoursesDetailsDTO  {
 		
-    private float percentage;
+	private String courseId;
+	private float percentage;
 	private String type;
 	private String level;
+	private String img;
+	private String title;
+	private String subtitle;
 	
 	List<CoursesDTO> sections;
 
@@ -41,6 +45,38 @@ public class CoursesDetailsDTO  {
 
 	public void setSections(List<CoursesDTO> sections) {
 		this.sections = sections;
+	}
+
+	public String getImg() {
+		return img;
+	}
+
+	public void setImg(String img) {
+		this.img = img;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public String getSubtitle() {
+		return subtitle;
+	}
+
+	public void setSubtitle(String subtitle) {
+		this.subtitle = subtitle;
+	}
+
+	public String getCourseId() {
+		return courseId;
+	}
+
+	public void setCourseId(String courseId) {
+		this.courseId = courseId;
 	}
 
 	

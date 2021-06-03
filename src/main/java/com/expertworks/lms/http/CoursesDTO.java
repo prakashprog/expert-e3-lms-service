@@ -22,9 +22,9 @@ public class CoursesDTO  implements Comparable<CoursesDTO> {
     private float  percentage;
 	private int totalvidoes;
 	private String s3folder;
-	@JsonIgnore
+	
 	private String type;
-	@JsonIgnore
+
 	private String level;
 
 	 public int compareTo(CoursesDTO coursesDTO) {  

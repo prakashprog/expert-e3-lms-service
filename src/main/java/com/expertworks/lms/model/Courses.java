@@ -12,14 +12,13 @@ import com.expertworks.lms.http.VideoLinkDTO;
 
 @DynamoDBTable(tableName = "CoursesMaster1")
 
-public class Courses implements Comparable<Courses>{
+public class Courses implements Comparable<Courses> {
 
 	@DynamoDBHashKey
 	private String courseId;
 
 	@DynamoDBRangeKey // CustomerBookmark Table referred.
 	private String sk;
-
 
 	@DynamoDBAttribute
 	private String createDate;
@@ -32,8 +31,6 @@ public class Courses implements Comparable<Courses>{
 
 	@DynamoDBAttribute
 	private String img;
-	
-	
 
 	// @JsonIgnore
 	@DynamoDBAttribute
@@ -47,17 +44,15 @@ public class Courses implements Comparable<Courses>{
 
 	@DynamoDBAttribute
 	private String type;
-	
+
 	@DynamoDBAttribute
 	private String level;
-	
 
+	public int compareTo(Courses courses) {
+		return sk.compareTo(courses.sk);
 
-	
-	  public int compareTo(Courses courses) {  
-		    return sk.compareTo(courses.sk);  
-		      
-		  }   
+	}
+
 	/**
 	 * @return the courseId
 	 */
@@ -114,8 +109,6 @@ public class Courses implements Comparable<Courses>{
 		this.s3folder = s3folder;
 	}
 
-	
-
 	/**
 	 * @return the totalvidoes
 	 */
@@ -158,11 +151,10 @@ public class Courses implements Comparable<Courses>{
 		coursesDTO.setImg(this.img);
 		coursesDTO.setCreateDate(this.createDate);
 		List<VideoLinkDTO> videoLinkDTOList = new ArrayList<VideoLinkDTO>();
-
-		for (VideoLink videoLink : getVideoLinks()) {
-			
-			videoLinkDTOList.add(videoLink.toVideoLinkDTO());
-		}
+		if (this.getVideoLinks() != null)
+			for (VideoLink videoLink : this.getVideoLinks()) {
+				videoLinkDTOList.add(videoLink.toVideoLinkDTO());
+			}
 		coursesDTO.setVideoLinks(videoLinkDTOList);
 		return coursesDTO;
 
@@ -209,18 +201,21 @@ public class Courses implements Comparable<Courses>{
 	public void setSk(String sk) {
 		this.sk = sk;
 	}
+
 	public String getType() {
 		return type;
 	}
+
 	public void setType(String type) {
 		this.type = type;
 	}
+
 	public String getLevel() {
 		return level;
 	}
+
 	public void setLevel(String level) {
 		this.level = level;
 	}
 
-	
 }

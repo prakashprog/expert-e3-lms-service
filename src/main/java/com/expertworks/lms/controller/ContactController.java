@@ -22,7 +22,7 @@ import com.expertworks.lms.repository.ContactRepository;
 import com.expertworks.lms.service.EmailService;
 
 //branch code
-//code added in main branch
+//code added in main branch (dev1 code)
 
 @RestController
 @Component

@@ -22,6 +22,7 @@ public class CoursesDTO  implements Comparable<CoursesDTO> {
     private float  percentage;
 	private int totalvidoes;
 	private String s3folder;
+	private boolean completed;
 	
 	private String type;
 
@@ -222,6 +223,23 @@ public class CoursesDTO  implements Comparable<CoursesDTO> {
 	}
 
 
+	public boolean isCompleted() {
+		return completed;
+	}
+
+
+	public void setCompleted(boolean completed) {
+		this.completed = completed;
+	}
+
+
+//	 @Override
+//	public boolean equals(Object obj) {
+//		// TODO Auto-generated method stub
+//		 CoursesDTO coursesDTO  = (CoursesDTO)obj;
+//		 	return coursesDTO.getSk().equalsIgnoreCase(this.sk);
+//	}
+	 
 	
 
 

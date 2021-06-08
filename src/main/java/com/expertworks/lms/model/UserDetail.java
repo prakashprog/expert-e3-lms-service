@@ -19,6 +19,9 @@ public class UserDetail {
 	private String sk;
 
 	@DynamoDBAttribute
+	private String sid;
+	
+	@DynamoDBAttribute
 	private String vid;
 
 	@DynamoDBAttribute
@@ -67,6 +70,14 @@ public class UserDetail {
 
 	public void setCourseId(String courseId) {
 		this.courseId = courseId;
+	}
+
+	public String getSid() {
+		return sid;
+	}
+
+	public void setSid(String sid) {
+		this.sid = sid;
 	}
 	
 	

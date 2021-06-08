@@ -56,7 +56,7 @@ public class CoursesController {
 		List<Courses> courseList = coursesRepository.getAllCourses();
 		return new ApiResponse(HttpStatus.OK, SUCCESS, courseList);
 	}
-	
+
 	// get all courses
 	@CrossOrigin
 	@GetMapping("/public/courses")
@@ -108,14 +108,11 @@ public class CoursesController {
 		Collections.sort(courseDTOList);
 		return new ApiResponse(HttpStatus.OK, SUCCESS, courseDTOList);
 	}
-	
-	
-	
+
 	@CrossOrigin
 	@GetMapping("/tmp/courses/{courseId}")
 	public ApiResponse gettmpCourses(@PathVariable("courseId") String courseId) {
 
-		
 		System.out.println(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
 		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
@@ -141,8 +138,8 @@ public class CoursesController {
 		System.out.println("courseId : " + courseId);
 		System.out.println("teamId : " + teamId);
 		System.out.println("sub : " + userId);
-        
-		//get all rows start with S#
+
+		// get all rows start with S#
 		List<Courses> list = coursesRepository.getCourses(courseId);
 		List<CoursesDTO> courseDTOList = new ArrayList();
 
@@ -153,21 +150,34 @@ public class CoursesController {
 
 		Collections.sort(courseDTOList);
 
-		/** -----to get percentage of course completed---userId and start with C#courseId------ **/
+		/**
+		 * -----to get percentage of course completed---userId and start with
+		 * C#courseId------
+		 **/
 		List<UserDetail> userDetailList = userDetailsRepository.get(userId, "C#" + courseId);
+		System.out.println("userId " + userId + courseId);
 		int videosCount = courseDTOList.size(); // as each section has one video
 		int videoscompleted = userDetailList.size();
+
+		for (UserDetail userDetail : userDetailList) {
+			for (CoursesDTO section : courseDTOList) {
+				if (section.getSk().equalsIgnoreCase(userDetail.getVid())) {
+					section.setCompleted(true);
+				}
+			}
+		}
+
 		System.out.println("videosCount :" + videosCount);
 		System.out.println("videoscompleted :" + videoscompleted);
-		float percentage=0;
+		float percentage = 0;
 		if (videoscompleted > 0) {
-          	percentage = (float) videoscompleted / videosCount;	
+			percentage = (float) videoscompleted / videosCount;
 		}
 		/** ------------to get percentage of course completed---------------------/ **/
-		
+
 		List<Courses> coursesMetaList = coursesRepository.getMetaDetailsCourses(courseId);
 		Courses courselevel = coursesMetaList.get(0);
-		CoursesDetailsDTO coursesDetailsDTO  = new CoursesDetailsDTO();
+		CoursesDetailsDTO coursesDetailsDTO = new CoursesDetailsDTO();
 		coursesDetailsDTO.setSections(courseDTOList);
 		coursesDetailsDTO.setPercentage(percentage);
 		coursesDetailsDTO.setLevel(courselevel.getLevel());
@@ -175,11 +185,6 @@ public class CoursesController {
 		coursesDetailsDTO.setCourseId(courseId);
 		return new ApiResponse(HttpStatus.OK, SUCCESS, coursesDetailsDTO);
 	}
-	
-	
-	
-	
-	
 
 	@CrossOrigin
 	@GetMapping("/public/courses/{courseId}")
@@ -238,14 +243,17 @@ public class CoursesController {
 
 		}
 
-		return new ApiResponse(HttpStatus.OK, SUCCESS, courseDTOList);
+		CoursesDetailsDTO coursesDetailsDTO = new CoursesDetailsDTO();
+		coursesDetailsDTO.setSections(courseDTOList);
+
+		return new ApiResponse(HttpStatus.OK, SUCCESS, coursesDetailsDTO);
 	}
 
 	@CrossOrigin
 	@GetMapping("/courses/meta/{courseId}")
 	public ApiResponse getMetaDeatils(@PathVariable("courseId") String courseId) {
 
-    	List<Courses> list = coursesRepository.getMetaDetailsCourses(courseId);
+		List<Courses> list = coursesRepository.getMetaDetailsCourses(courseId);
 		return new ApiResponse(HttpStatus.OK, SUCCESS, list);
 	}
 

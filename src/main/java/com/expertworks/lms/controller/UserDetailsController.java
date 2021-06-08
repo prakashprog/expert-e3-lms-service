@@ -43,6 +43,7 @@ public class UserDetailsController {
 		String vid = userDetail.getVid();
 			
 		userDetail.setSk("C#"+courseId+"#"+vid);
+		userDetail.setSid(userDetail.getVid());
 		userDetailsRepository.save(userDetail);
 		return new ApiResponse(HttpStatus.OK, SUCCESS, userDetail);
 

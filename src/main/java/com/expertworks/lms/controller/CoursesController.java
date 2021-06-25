@@ -1,13 +1,16 @@
 package com.expertworks.lms.controller;
 
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,6 +30,10 @@ import com.expertworks.lms.model.UserDetail;
 import com.expertworks.lms.repository.CoursesRepository;
 import com.expertworks.lms.repository.UserDetailsRepository;
 import com.expertworks.lms.util.AuthTokenDetails;
+import com.expertworks.lms.util.JwtUtil;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 
 //https://github.com/dailycodebuffer/Spring-MVC-Tutorials/tree/master/DynanoDb-SpringBoot-Demo/src/main/java/com/dailycodebuffer
 
@@ -41,6 +48,9 @@ public class CoursesController {
 
 	@Autowired
 	private UserDetailsRepository userDetailsRepository;
+	
+	@Autowired
+	private JwtUtil jwtUtil;
 
 	@CrossOrigin
 	@PostMapping("/courses")
@@ -76,10 +86,14 @@ public class CoursesController {
 
 		Object credentials = SecurityContextHolder.getContext().getAuthentication().getCredentials();
 
+		System.out.println("credentials :"+credentials);
+		
 		String username = null;
 		String teamId = null;
 		String userId = null;
-
+		
+		
+			
 		if (principal instanceof UserDetails) {
 			username = ((UserDetails) principal).getUsername();
 		} else {
@@ -117,11 +131,25 @@ public class CoursesController {
 		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
 		Object credentials = SecurityContextHolder.getContext().getAuthentication().getCredentials();
-
+		System.out.println("credentials :"+credentials);
+		
 		String username = null;
 		String teamId = null;
 		String userId = null;
-
+		
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();        
+		Object details = authentication.getDetails();        
+		if ( details instanceof OAuth2AuthenticationDetails ){
+		    OAuth2AuthenticationDetails oAuth2AuthenticationDetails = (OAuth2AuthenticationDetails)details;
+		    System.out.println(":::==" +oAuth2AuthenticationDetails.getTokenValue());
+		    Claims claims = jwtUtil.extractAllClaims(oAuth2AuthenticationDetails.getTokenValue());
+		    System.out.println("--"+claims.get("teamId")); 
+		    teamId = claims.get("teamId",String.class);
+		    userId  = claims.get("userId",String.class);
+		}  
+		
+	
+		 
 		if (principal instanceof UserDetails) {
 			username = ((UserDetails) principal).getUsername();
 		} else {
@@ -183,6 +211,11 @@ public class CoursesController {
 		coursesDetailsDTO.setLevel(courselevel.getLevel());
 		coursesDetailsDTO.setType(courselevel.getType());
 		coursesDetailsDTO.setCourseId(courseId);
+		coursesDetailsDTO.setDescription(courselevel.getDescription());
+		coursesDetailsDTO.setLeveldesc(courselevel.getLeveldesc());
+		coursesDetailsDTO.setIncludes(courselevel.getIncludes());
+		
+		
 		return new ApiResponse(HttpStatus.OK, SUCCESS, coursesDetailsDTO);
 	}
 
@@ -228,7 +261,8 @@ public class CoursesController {
 
 			List<VideoLinkDTO> videolinkList = section.getVideoLinks();
 
-			if (section == courseDTOList.get(0)) {
+			if (section == courseDTOList.get(0) || section ==courseDTOList.get(1)||
+					section ==courseDTOList.get(2)) {
 
 				for (int i = 0; i < videolinkList.size(); i++) {
 					if (i != 0) {
@@ -242,9 +276,18 @@ public class CoursesController {
 					videoLink.setUrl(null);
 
 		}
-
+		
+		
+		List<Courses> coursesMetaList = coursesRepository.getMetaDetailsCourses(courseId);
+		Courses courselevel = coursesMetaList.get(0);
 		CoursesDetailsDTO coursesDetailsDTO = new CoursesDetailsDTO();
 		coursesDetailsDTO.setSections(courseDTOList);
+		coursesDetailsDTO.setLevel(courselevel.getLevel());
+		coursesDetailsDTO.setType(courselevel.getType());
+		coursesDetailsDTO.setCourseId(courseId);
+		coursesDetailsDTO.setDescription(courselevel.getDescription());
+		coursesDetailsDTO.setLeveldesc(courselevel.getLeveldesc());
+		coursesDetailsDTO.setIncludes(courselevel.getIncludes());
 
 		return new ApiResponse(HttpStatus.OK, SUCCESS, coursesDetailsDTO);
 	}

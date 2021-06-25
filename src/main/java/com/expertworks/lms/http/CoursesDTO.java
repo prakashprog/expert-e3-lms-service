@@ -23,6 +23,7 @@ public class CoursesDTO  implements Comparable<CoursesDTO> {
 	private int totalvidoes;
 	private String s3folder;
 	private boolean completed;
+	private boolean description;
 	
 	private String type;
 
@@ -230,6 +231,16 @@ public class CoursesDTO  implements Comparable<CoursesDTO> {
 
 	public void setCompleted(boolean completed) {
 		this.completed = completed;
+	}
+
+
+	public boolean isDescription() {
+		return description;
+	}
+
+
+	public void setDescription(boolean description) {
+		this.description = description;
 	}
 
 

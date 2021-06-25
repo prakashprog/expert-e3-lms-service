@@ -47,7 +47,7 @@ public class GroupController {
 		partnerRepository.addGroup(partner.getPartnerId(), savedGroup);
 		return new ApiResponse(HttpStatus.OK, SUCCESS, savedGroup);
 	}
-
+  
 		
 	
 	@CrossOrigin

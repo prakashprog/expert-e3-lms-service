@@ -1,6 +1,5 @@
 package com.expertworks.lms.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,12 +19,14 @@ import com.expertworks.lms.http.PartnerDTO;
 import com.expertworks.lms.model.Group;
 import com.expertworks.lms.model.Partner;
 import com.expertworks.lms.repository.PartnerRepository;
+import com.expertworks.lms.util.TokenUtil;
 
 @RestController
 @Component
 public class PartnerController {
 
 	public static final String SUCCESS = "success";
+	
 
 	@Autowired
 	private PartnerRepository partnerRepository;

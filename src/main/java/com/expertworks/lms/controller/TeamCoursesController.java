@@ -2,6 +2,7 @@ package com.expertworks.lms.controller;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -97,7 +98,10 @@ public class TeamCoursesController {
 				coursesDTOList.add(coursesDTO);
 			}
 		}
-
+		
+		List<String> imageList=	coursesDTOList.stream().map(p->p.getImg()).collect(Collectors.toList()); 
+		System.out.println(imageList);
+		coursesDTOList.stream().map(p->p.getImg()).forEach(p ->System.out.println(p));
 		return new ApiResponse(HttpStatus.OK, SUCCESS, coursesDTOList);
 	}
 

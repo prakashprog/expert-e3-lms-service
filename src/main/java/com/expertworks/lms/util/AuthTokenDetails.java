@@ -8,7 +8,7 @@ public class AuthTokenDetails {
 	private String teamId;
 	
 	private String groupId;
-	
+	  
 	private String sub;
 	
 

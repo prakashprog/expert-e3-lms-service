@@ -2,6 +2,8 @@ package com.expertworks.lms.http;
 
 import java.util.List;
 
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
+
 
 public class CoursesDetailsDTO  {
 		
@@ -12,6 +14,9 @@ public class CoursesDetailsDTO  {
 	private String img;
 	private String title;
 	private String subtitle;
+	private String description;
+	private String leveldesc;
+	private List<String> includes;
 	
 	List<CoursesDTO> sections;
 
@@ -77,6 +82,30 @@ public class CoursesDetailsDTO  {
 
 	public void setCourseId(String courseId) {
 		this.courseId = courseId;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public String getLeveldesc() {
+		return leveldesc;
+	}
+
+	public void setLeveldesc(String leveldesc) {
+		this.leveldesc = leveldesc;
+	}
+
+	public List<String> getIncludes() {
+		return includes;
+	}
+
+	public void setIncludes(List<String> includes) {
+		this.includes = includes;
 	}
 
 	

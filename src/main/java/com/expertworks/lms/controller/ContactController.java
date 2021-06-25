@@ -2,10 +2,10 @@ package com.expertworks.lms.controller;
 
 import java.util.List;
 
-
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.expertworks.lms.http.ApiResponse;
@@ -26,6 +28,7 @@ import com.expertworks.lms.service.EmailService;
 
 @RestController
 @Component
+
 public class ContactController {
 
 	public static final String SUCCESS = "success";
@@ -35,6 +38,8 @@ public class ContactController {
 
 	@Autowired
 	private ContactRepository contactRepository;
+	
+
 
 	@CrossOrigin
 	@PostMapping("public/contactus")
@@ -51,7 +56,7 @@ public class ContactController {
 		obj.put("ending", "Thanks");
 		//String templateDataJson = "{ \"name\":\"Jack\", \"eom\": \"Tiger\"}";
 		emailService.sendEmail(to, obj.toJSONString());
-
+		
 		return new ApiResponse(HttpStatus.OK, SUCCESS, contactRepository.save(contact));
 	}
 
@@ -60,7 +65,7 @@ public class ContactController {
 	public ApiResponse getAll() {
 
 		List<Contact> list = contactRepository.getAll();
-		return new ApiResponse(HttpStatus.OK, SUCCESS, list);
+		return new ApiResponse(HttpStatus.OK, SUCCESS, list);   
 	}
 
 	@CrossOrigin
@@ -83,5 +88,14 @@ public class ContactController {
 	public String updateCourse(@PathVariable("courseId") String contactId, @RequestBody Contact contact) {
 		return contactRepository.update(contactId, contact);
 	}
+	
+	
+	@CrossOrigin(origins = "*") 
+	@PutMapping("/putcall/{contactId}")
+	public ApiResponse putCallTest(@PathVariable("contactId") String contactId,@RequestBody Contact contact) {
+		return new ApiResponse(HttpStatus.OK, SUCCESS, "Put working...");
+	}
+	
+	
 
 }

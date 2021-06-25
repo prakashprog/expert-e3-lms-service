@@ -48,6 +48,8 @@ public class UserDetailsRepository {
     
     public List<UserDetail> get(String userId,String sk) {
     	
+    	System.out.println("hashkey : " + userId + "sk BEGINS_WITH : " + sk );  
+    	
     	UserDetail userDetail = new UserDetail();
     	userDetail.setUserId(userId);
     

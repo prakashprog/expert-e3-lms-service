@@ -11,13 +11,16 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBRangeKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import com.expertworks.lms.http.PartnerDTO;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 
 
 public class UserDTO implements Comparable<UserDTO> {
 	
 	private String userId;
+	@JsonIgnore
 	private String sk;
+	
 	private Date createdDate;
 	private String name;
 
@@ -26,6 +29,9 @@ public class UserDTO implements Comparable<UserDTO> {
 	private String teamId;
 	private String groupId;
 	private String partnerId;
+
+	private String email;
+	private String userRole;
 	
 	
 
@@ -112,6 +118,26 @@ public class UserDTO implements Comparable<UserDTO> {
 
 	public void setPartnerId(String partnerId) {
 		this.partnerId = partnerId;
+	}
+
+
+	public String getEmail() {
+		return email;
+	}
+
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+
+	public String getUserRole() {
+		return userRole;
+	}
+
+
+	public void setUserRole(String userRole) {
+		this.userRole = userRole;
 	}
 
 	

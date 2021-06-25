@@ -1,10 +1,14 @@
 package com.expertworks.lms.controller;
 
+import java.security.SecureRandom;
 import java.util.List;
+import java.util.Random;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,12 +28,20 @@ import com.expertworks.lms.repository.GroupRepository;
 import com.expertworks.lms.repository.PartnerRepository;
 import com.expertworks.lms.repository.TeamRepository;
 import com.expertworks.lms.repository.UserRepository;
+import com.expertworks.lms.service.EmailService;
+import com.expertworks.lms.util.TokenUtil;
 
 @RestController
 @Component
 public class UserController {
 
 	public static final String SUCCESS = "success";
+	public static final String ROLE_ADMIN = "ROLE_ADMIN";
+	public static final String ROLE_USER = "ROLE_USER";
+	public static final String ROLE_MERCHANT = "ROLE_SUPERADMIN";
+
+	@Autowired
+	private EmailService emailService;
 
 	@Autowired
 	private GroupRepository groupRepository;
@@ -43,9 +55,12 @@ public class UserController {
 	@Autowired
 	private PartnerRepository partnerRepository;
 
+	@Autowired
+	TokenUtil tokenUtil;
+
 	@CrossOrigin
 	@PostMapping("/user/{teamId}")
-	public ApiResponse create(@PathVariable("teamId") String teamId, @RequestBody User user) {
+	public ApiResponse createUserForTeam(@PathVariable("teamId") String teamId, @RequestBody User user) {
 
 		user.setUserName(user.getName());
 		user.setTeamId(teamId);
@@ -61,10 +76,39 @@ public class UserController {
 	}
 
 	@CrossOrigin
+	@PostMapping("/user")
+	public ApiResponse createUserForPartner(@RequestBody User user) throws Exception {
+
+		user.setUserName(user.getName());
+		User savedUser = null;
+		String partnerId = null;
+		partnerId = tokenUtil.getPartner();
+		System.out.println("partnerId for User : " + partnerId);
+		List<Partner> partnerList = partnerRepository.get(partnerId);
+		if (partnerList != null && partnerList.size() > 0) {
+			Partner partner = partnerList.get(0);
+			user.setPartnerId(partner.getPartnerId());
+			user.setUserRole(ROLE_USER);
+			savedUser = userRepository.save(user);
+			emailService.sendCredentailsMessage(user.getEmail(), StringUtils.capitalize(user.getName()),
+					user.getUserId(), user.getPassword());
+
+		} else {
+			throw new Exception("Partner not found");
+		}
+
+		return new ApiResponse(HttpStatus.OK, SUCCESS, savedUser.toUserDTO());
+	}
+
+	@CrossOrigin
 	@GetMapping("/user")
 	public ApiResponse getAll() {
 
-		List<Team> list = teamRepository.getAll();
+		String partnerId = null;
+		partnerId = tokenUtil.getPartner();
+		System.out.println("partnerId : " + partnerId);
+		List<User> list = userRepository.queryOnGSI("partnerId-index", "partnerId", partnerId);
+		 System.out.println("hello : "+ this.getRandomPassword(4));
 		return new ApiResponse(HttpStatus.OK, SUCCESS, list);
 	}
 
@@ -88,14 +132,56 @@ public class UserController {
 
 	@CrossOrigin
 	@DeleteMapping("/user/{userId}")
-	public String delete(@PathVariable("userId") String teamId) {
-		return userRepository.delete(teamId);
+	public String delete(@PathVariable("userId") String userId) {
+		return userRepository.delete(userId);
 	}
 
 	@CrossOrigin
-	@PutMapping("/team/{userId}")
-	public String update(@PathVariable("userId") String userId, @RequestBody User user) {
-		return userRepository.update(userId, user);
+	@PutMapping("/user/{userId}")
+	public ApiResponse update(@PathVariable("userId") String userId, @RequestBody User user) {
+		user.setUserId(userId);
+		return new ApiResponse(HttpStatus.OK, SUCCESS, userRepository.update(userId, user));
+	}
+	
+	@CrossOrigin
+	@PutMapping("/user/changepwd")
+	public ApiResponse changePwd( @RequestBody User user) throws Exception{
+		
+		String userId = user.getUserId();
+		User loadedUser = userRepository.load(user.getUserId());
+		System.out.println(loadedUser.getUserId());
+		System.out.println(loadedUser.getPassword());
+		
+		System.out.println("DB Password :" +loadedUser.getPassword() + " ;Old Password : "+user.getOldpassword());
+	
+		if(!loadedUser.getPassword().equals(user.getOldpassword()))
+		{
+			throw new Exception("Password did not match");
+			
+		}
+		
+		return new ApiResponse(HttpStatus.OK, SUCCESS, userRepository.update(userId, user));
+	}
+	
+	
+
+	public String getRandomPassword(int len) {
+		String chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghi" + "jklmnopqrstuvwxyz!@#$%&";
+		Random rnd = new Random();
+		StringBuilder sb = new StringBuilder(len);
+		for (int i = 0; i < len; i++)
+			sb.append(chars.charAt(rnd.nextInt(chars.length())));
+		return sb.toString();
+	}
+
+	public static void main(String[] args) {
+
+		char[] possibleCharacters = (new String("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"))
+				.toCharArray();
+		String randomStr = RandomStringUtils.random(7, 0, possibleCharacters.length - 1, false, false,
+				possibleCharacters, new SecureRandom());
+		System.out.println(randomStr);
+
 	}
 
 }

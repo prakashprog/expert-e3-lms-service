@@ -16,9 +16,9 @@ import org.json.simple.parser.JSONParser;
 
 public class DynamoDBUtil {
 	
-	public static String img = "https://d3s24np0er9fug.cloudfront.net/phase1/courses/deeplearn/expert/expert.jpg";
-	public static String prefix = "https://d3s24np0er9fug.cloudfront.net/phase1/courses/deeplearn/expert/videos/hls/";
-	public static String courseid = "5200";
+	public static String img = "https://d3s24np0er9fug.cloudfront.net/phase1/courses/python/expert/expert.jpg";
+	public static String prefix = "https://d3s24np0er9fug.cloudfront.net/phase1/courses/python/expert/videos/hls/";
+	public static String courseid = "6700";
 	
 	public static HashMap<String,List> readFile() throws Exception {
 
@@ -28,7 +28,7 @@ public class DynamoDBUtil {
 		HashMap<String,List> map = new HashMap();
 		
 		
-		Scanner scanner = new Scanner(new File("D:\\dynamo\\fileNames2.txt"));
+		Scanner scanner = new Scanner(new File("D:\\dynamo\\fileNames5.txt"));
 		int lineNo = 0;
 		while (scanner.hasNextLine()) {
 			String line = scanner.nextLine();

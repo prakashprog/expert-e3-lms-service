@@ -31,6 +31,15 @@ public class Courses implements Comparable<Courses> {
 
 	@DynamoDBAttribute
 	private String img;
+	
+	@DynamoDBAttribute
+	private String description;
+	
+	@DynamoDBAttribute
+	private String leveldesc;
+	
+	@DynamoDBAttribute
+	private List<String> includes;
 
 	// @JsonIgnore
 	@DynamoDBAttribute
@@ -47,6 +56,9 @@ public class Courses implements Comparable<Courses> {
 
 	@DynamoDBAttribute
 	private String level;
+	
+
+
 
 	public int compareTo(Courses courses) {
 		return sk.compareTo(courses.sk);
@@ -216,6 +228,30 @@ public class Courses implements Comparable<Courses> {
 
 	public void setLevel(String level) {
 		this.level = level;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public List<String> getIncludes() {
+		return includes;
+	}
+
+	public void setIncludes(List<String> includes) {
+		this.includes = includes;
+	}
+
+	public String getLeveldesc() {
+		return leveldesc;
+	}
+
+	public void setLeveldesc(String leveldesc) {
+		this.leveldesc = leveldesc;
 	}
 
 }

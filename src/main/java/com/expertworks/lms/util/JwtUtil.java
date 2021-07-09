@@ -36,8 +36,8 @@ public class JwtUtil {
 	}
 
 	public Claims extractAllClaims(String token) {
-		return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
-		//return Jwts.parser().setSigningKey(secret.getBytes(Charset.forName("UTF-8"))).parseClaimsJws(token).getBody();
+		//return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+		return Jwts.parser().setSigningKey(secret.getBytes(Charset.forName("UTF-8"))).parseClaimsJws(token).getBody();
 		
 	}
 

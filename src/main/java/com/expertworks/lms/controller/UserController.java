@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.expertworks.lms.http.ApiResponse;
@@ -144,23 +145,47 @@ public class UserController {
 	}
 	
 	@CrossOrigin
-	@PutMapping("/user/changepwd")
-	public ApiResponse changePwd( @RequestBody User user) throws Exception{
+	@PostMapping("/user/changepwd")
+	public ApiResponse changePwd( @RequestBody User user,@RequestParam(required = false, name = "id") String id) throws Exception{
 		
 		String userId = user.getUserId();
+		String newPassword = user.getPassword();
 		User loadedUser = userRepository.load(user.getUserId());
 		System.out.println(loadedUser.getUserId());
-		System.out.println(loadedUser.getPassword());
+		System.out.println(loadedUser.getPassword()  + ":Id : "+id);
+		
 		
 		System.out.println("DB Password :" +loadedUser.getPassword() + " ;Old Password : "+user.getOldpassword());
 	
-		if(!loadedUser.getPassword().equals(user.getOldpassword()))
+		if(!loadedUser.getPassword().equals(user.getOldpassword()) || newPassword=="" )
 		{
 			throw new Exception("Password did not match");
 			
 		}
 		
 		return new ApiResponse(HttpStatus.OK, SUCCESS, userRepository.update(userId, user));
+	}
+	
+	
+	@CrossOrigin
+	@PostMapping("/user/resetpwd")
+	public ApiResponse forgotPwd( @RequestBody User user) throws Exception{
+		
+		String userId = user.getUserId();
+		String randompwd =null;
+		User loadedUser = userRepository.load(user.getUserId());
+		if(loadedUser==null)
+		{
+			throw new Exception("User not found");
+		}
+		System.out.println("In DB userId: "+ loadedUser.getUserId()+ ", Pwd : "+ loadedUser.getPassword());
+		randompwd = this.getRandomPassword(4);
+		loadedUser.setPassword(randompwd);
+		System.out.println("New Pwd: "+ randompwd);
+		user = userRepository.update(userId, loadedUser);
+		emailService.sendResetCredentailsMail(loadedUser.getEmail(), StringUtils.capitalize(user.getName()),
+				loadedUser.getUserId(), loadedUser.getPassword());
+		return new ApiResponse(HttpStatus.OK, SUCCESS, user);
 	}
 	
 	

@@ -117,5 +117,30 @@ public class EmailService {
 		client.sendEmail(request);
 
 	}
+	
+	public void sendResetCredentailsMail(String to, String username , String userId,String password) {
+
+		final String FROM = "Sales@expert-works.com";
+		//final String TO = "sskprakash@gmail.com";
+		final String SUBJECT = "Password Reset for Expert-works";
+		final String HTMLBODY = "Hi " + username +",<br><br>"+"Welcome to Expert Works,"
+				+"<br>"+"Please login with below default credentials"+"<br><br>"
+		        + "<b>Username</b> : " +"<i>" +userId+"</i><br>"
+		        + "<b>Password</b> : " + "<i>"+password+"</i><br><hr>"
+				+ "<p>This email was sent from <a href='https://www.expert-works.com'>"
+				+ "expert-works.com</a> "
+		        + "<br><br><br> Thanks,<br> Expert Works Team.</a> ";
+		final String TEXTBODY = "This email was sent from <a href='https://www.expert-works.com'>\"";
+
+		SendEmailRequest request = new SendEmailRequest().withDestination(new Destination().withToAddresses(to))
+				.withMessage(new com.amazonaws.services.simpleemail.model.Message()
+						.withBody(new Body().withHtml(new Content().withCharset("UTF-8").withData(HTMLBODY))
+								.withText(new Content().withCharset("UTF-8").withData(TEXTBODY)))
+						.withSubject(new Content().withCharset("UTF-8").withData(SUBJECT)))
+				.withSource(FROM);
+		client.sendEmail(request);
+
+	}
+
 
 }

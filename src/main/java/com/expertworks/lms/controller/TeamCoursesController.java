@@ -6,8 +6,10 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,6 +25,9 @@ import com.expertworks.lms.model.TeamCourses;
 import com.expertworks.lms.repository.CoursesRepository;
 import com.expertworks.lms.repository.TeamCoursesRepository;
 import com.expertworks.lms.util.AuthTokenDetails;
+import com.expertworks.lms.util.JwtUtil;
+
+import io.jsonwebtoken.Claims;
 
 //https://github.com/dailycodebuffer/Spring-MVC-Tutorials/tree/master/DynanoDb-SpringBoot-Demo/src/main/java/com/dailycodebuffer
 
@@ -38,6 +43,9 @@ public class TeamCoursesController {
 
 	@Autowired
 	private CoursesRepository coursesRepository;
+	
+	@Autowired
+	private JwtUtil jwtUtil;
 
 	@PostMapping("/")
 	@CrossOrigin
@@ -69,6 +77,7 @@ public class TeamCoursesController {
 		List<TeamCourses> teamCourses = null;
 		List<CoursesDTO> coursesDTOList = new ArrayList();
 		String teamIdinToken = null;
+		String userId = null;
 		System.out.println(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
 		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		Object credentials = SecurityContextHolder.getContext().getAuthentication().getCredentials();
@@ -82,9 +91,20 @@ public class TeamCoursesController {
 
 		if (credentials instanceof AuthTokenDetails) {
 			teamIdinToken = ((AuthTokenDetails) credentials).getTeamId();
-			System.out.println("teamIdinToken : " + teamIdinToken);
-
 		}
+		
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Object details = authentication.getDetails();
+		
+		if (details instanceof OAuth2AuthenticationDetails) {
+			OAuth2AuthenticationDetails oAuth2AuthenticationDetails = (OAuth2AuthenticationDetails) details;
+			System.out.println(":::==" + oAuth2AuthenticationDetails.getTokenValue());
+			Claims claims = jwtUtil.extractAllClaims(oAuth2AuthenticationDetails.getTokenValue());
+			System.out.println("--" + claims.get("teamId"));
+			teamIdinToken = claims.get("teamId", String.class);
+			userId = claims.get("userId", String.class);
+		}
+		System.out.println("teamIdinToken : " + teamIdinToken);
 		teamCourses = teamCoursesRepository.getTeamCourses(teamIdinToken);
 
 		for (TeamCourses teamCourse : teamCourses) {

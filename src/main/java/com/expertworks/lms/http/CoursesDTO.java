@@ -2,6 +2,10 @@ package com.expertworks.lms.http;
 
 import java.util.List;
 
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.StandardToStringStyle;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -251,7 +255,14 @@ public class CoursesDTO  implements Comparable<CoursesDTO> {
 //		 	return coursesDTO.getSk().equalsIgnoreCase(this.sk);
 //	}
 	 
-	
+	 @Override
+		public String toString() {
+		     StandardToStringStyle style = new StandardToStringStyle();
+		     style.setUseClassName(false);
+		     style.setUseIdentityHashCode(false);
+		    ToStringBuilder builder = new ReflectionToStringBuilder(this, style);
+		    return builder.toString();
+		}
 
 
 	

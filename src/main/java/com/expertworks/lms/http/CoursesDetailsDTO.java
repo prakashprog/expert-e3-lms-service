@@ -2,6 +2,10 @@ package com.expertworks.lms.http;
 
 import java.util.List;
 
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.StandardToStringStyle;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 
 
@@ -11,6 +15,7 @@ public class CoursesDetailsDTO  {
 	private float percentage;
 	private String type;
 	private String level;
+	private String order;
 	private String img;
 	private String title;
 	private String subtitle;
@@ -108,6 +113,22 @@ public class CoursesDetailsDTO  {
 		this.includes = includes;
 	}
 
+	public String getOrder() {
+		return order;
+	}
+
+	public void setOrder(String order) {
+		this.order = order;
+	}
+
+	 @Override
+		public String toString() {
+		     StandardToStringStyle style = new StandardToStringStyle();
+		     style.setUseClassName(false);
+		     style.setUseIdentityHashCode(false);
+		    ToStringBuilder builder = new ReflectionToStringBuilder(this, style);
+		    return builder.toString();
+		}
 	
 
 

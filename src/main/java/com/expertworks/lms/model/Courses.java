@@ -3,6 +3,10 @@ package com.expertworks.lms.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.StandardToStringStyle;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBRangeKey;
@@ -57,7 +61,8 @@ public class Courses implements Comparable<Courses> {
 	@DynamoDBAttribute
 	private String level;
 	
-
+	@DynamoDBAttribute
+	private String order;
 
 
 	public int compareTo(Courses courses) {
@@ -252,6 +257,23 @@ public class Courses implements Comparable<Courses> {
 
 	public void setLeveldesc(String leveldesc) {
 		this.leveldesc = leveldesc;
+	}
+
+	public String getOrder() {
+		return order;
+	}
+
+	public void setOrder(String order) {
+		this.order = order;
+	}
+	
+	@Override
+	public String toString() {
+	     StandardToStringStyle style = new StandardToStringStyle();
+	     style.setUseClassName(false);
+	     style.setUseIdentityHashCode(false);
+	    ToStringBuilder builder = new ReflectionToStringBuilder(this, style);
+	    return builder.toString();
 	}
 
 }

@@ -1,9 +1,10 @@
 package com.expertworks.lms.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +12,8 @@ import io.jsonwebtoken.Claims;
 
 @Service
 public class TokenUtil {
+	
+	private final static Logger logger = LoggerFactory.getLogger(TokenUtil.class);
 	
 	@Autowired
 	private JwtUtil jwtUtil;
@@ -64,5 +67,25 @@ public class TokenUtil {
 
 		return partnerId;
 	}
+	
+	
+	
+	public String getUserId()
+	{
+		String userId= null;
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Object details = authentication.getDetails();
+		if (details instanceof OAuth2AuthenticationDetails) {
+			OAuth2AuthenticationDetails oAuth2AuthenticationDetails = (OAuth2AuthenticationDetails) details;
+			System.out.println(":::==" + oAuth2AuthenticationDetails.getTokenValue());
+			Claims claims = jwtUtil.extractAllClaims(oAuth2AuthenticationDetails.getTokenValue());
+			userId = claims.get("userId", String.class);
+			
+		}
+		 return userId;
+		
+	}
+	
+	
 
 }

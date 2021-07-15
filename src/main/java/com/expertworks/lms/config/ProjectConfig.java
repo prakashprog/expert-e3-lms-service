@@ -25,11 +25,14 @@ public class ProjectConfig extends ResourceServerConfigurerAdapter {
     @Value("${jwt.client.id}")
     private String clientId;
     
-    @Value("${jwt.client.secret}")
+    @Value("${jwt.client.secret}")  
     private String secret;
     
     @Value("${jwt.checktoken.endpoint}")
     private String checkTokenEndPoint;
+    
+    @Value("${jwt.secret}")
+    private String signingKey;
 
     @Bean
     public TokenStore tokenStore() {
@@ -39,7 +42,8 @@ public class ProjectConfig extends ResourceServerConfigurerAdapter {
     @Bean
     public JwtAccessTokenConverter jwtAccessTokenConverter() {
     	JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
-        converter.setSigningKey("javainuse");
+    	converter.setSigningKey(signingKey);
+    	// converter.setSigningKey("javainuse");
        // converter.setAccessTokenConverter( new JwtConverter() );
         return converter;
     }
@@ -51,7 +55,7 @@ public class ProjectConfig extends ResourceServerConfigurerAdapter {
     
     @Override
     public void configure(HttpSecurity http) throws Exception {
-    	 http.csrf().disable().authorizeRequests().antMatchers("/actuator","/courses/","/public/courses","/public/courses/*","/public/contactus")
+    	 http.csrf().disable().authorizeRequests().antMatchers("/actuator/prometheus","/actuator/*","/courses/","/public/courses","/public/courses/*","/public/contactus")
          .permitAll().anyRequest().authenticated()
          .and().exceptionHandling().and().sessionManagement()
          .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
@@ -64,7 +68,7 @@ public class ProjectConfig extends ResourceServerConfigurerAdapter {
               }
           });
     }
-//    
+    
 //    @Bean
 //    public ResourceServerTokenServices tokenService() {
 //        RemoteTokenServices tokenServices = new RemoteTokenServices();
@@ -73,7 +77,7 @@ public class ProjectConfig extends ResourceServerConfigurerAdapter {
 //        tokenServices.setCheckTokenEndpointUrl(checkTokenEndPoint);
 //        return tokenServices;
 //    }
-    
+//    
 
     
     

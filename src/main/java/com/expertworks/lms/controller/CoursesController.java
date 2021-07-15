@@ -12,7 +12,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
-import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,11 +21,14 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.expertworks.lms.aspect.LogExecutionTime;
 import com.expertworks.lms.http.ApiResponse;
 import com.expertworks.lms.http.CoursesDTO;
 import com.expertworks.lms.http.CoursesDetailsDTO;
+import com.expertworks.lms.http.ResourceLinkDTO;
 import com.expertworks.lms.http.VideoLinkDTO;
 import com.expertworks.lms.model.Courses;
+import com.expertworks.lms.model.ResourceLink;
 import com.expertworks.lms.model.UserDetail;
 import com.expertworks.lms.repository.CoursesRepository;
 import com.expertworks.lms.repository.UserDetailsRepository;
@@ -34,7 +36,6 @@ import com.expertworks.lms.util.AuthTokenDetails;
 import com.expertworks.lms.util.JwtUtil;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 
 //https://github.com/dailycodebuffer/Spring-MVC-Tutorials/tree/master/DynanoDb-SpringBoot-Demo/src/main/java/com/dailycodebuffer
 @CrossOrigin(origins = "*")
@@ -61,11 +62,12 @@ public class CoursesController {
 	@Autowired
 	private JwtUtil jwtUtil;
 
-	
+	@LogExecutionTime
 	@PostMapping("/courses")
 	@CrossOrigin
 	public Courses saveCourses(@RequestBody Courses courses) {
-		return coursesRepository.save(courses);
+		//return coursesRepository.save(courses);
+		return courses;
 	}
 
 	// get all courses
@@ -81,7 +83,7 @@ public class CoursesController {
 	}
 
 	// get all courses
-	
+	@LogExecutionTime
 	@GetMapping("/public/courses")
 	@CrossOrigin
 	public ApiResponse getallCourses() {
@@ -91,6 +93,7 @@ public class CoursesController {
 	}
 
 	
+	@LogExecutionTime
 	@GetMapping("/courses/{courseId}")
 	@CrossOrigin
 	public ApiResponse getCourses(@PathVariable("courseId") String courseId) {
@@ -124,7 +127,7 @@ public class CoursesController {
 		System.out.println("teamId : " + teamId);
 		System.out.println("sub : " + userId);
 
-		List<Courses> list = coursesRepository.getCourses(courseId);
+		List<Courses> list = coursesRepository.getCourseSections(courseId);
 		List<CoursesDTO> courseDTOList = new ArrayList();
 
 		for (Courses item : list) {
@@ -136,7 +139,7 @@ public class CoursesController {
 		return new ApiResponse(HttpStatus.OK, SUCCESS, courseDTOList);
 	}
 
-	
+	@LogExecutionTime
 	@GetMapping("/tmp/courses/{courseId}")
 	@CrossOrigin
 	public ApiResponse gettmpCourses(@PathVariable("courseId") String courseId) {
@@ -181,28 +184,47 @@ public class CoursesController {
 		System.out.println("teamId : " + teamId);
 		System.out.println("sub : " + userId);
 
+		List<Courses> coursesMetaList = coursesRepository.getMetaDetailsCourses(courseId);
+		Courses courselevelData = coursesMetaList.get(0);
+		String s3folder = coursesMetaList.get(0).getS3folder();
+		System.out.println("s3folder : "  + s3folder);
 		// get all rows start with S#
-		List<Courses> list = coursesRepository.getCourses(courseId);
-		List<CoursesDTO> courseDTOList = new ArrayList();
-
-		for (Courses item : list) {
-			CoursesDTO courseDTO = item.toCourseDTO();
-			courseDTOList.add(courseDTO);
+		List<Courses> secList = coursesRepository.getCourseSections(courseId);
+		List<CoursesDTO> secDTOList = new ArrayList();
+		
+		for (Courses section : secList) {
+			CoursesDTO courseDTO = section.toCourseDTO();
+			List videosList = courseDTO.getVideoLinks().stream().map(v-> {
+				v.getResourceLinks();
+				for(ResourceLinkDTO resourceLinkDTO : v.getResourceLinks()) {
+					String link = resourceLinkDTO.getLink();
+					String basepath = s3folder.substring(0,s3folder.indexOf("/videos"));
+					resourceLinkDTO.setLink(distributionprotocol+"://"+distributiondomain+"/"+basepath+"/docs/"+link);
+				}	
+				
+				return v;
+			}).collect(Collectors.toList());
+			courseDTO.setVideoLinks(videosList);
+			secDTOList.add(courseDTO);
 		}
 
-		Collections.sort(courseDTOList);
+		Collections.sort(secDTOList);
+		
+		
+		//888
 
+	
 		/**
 		 * -----to get percentage of course completed---userId and start with
 		 * C#courseId------
 		 **/
 		List<UserDetail> userDetailList = userDetailsRepository.get(userId, "C#" + courseId);
 		System.out.println("userId " + userId + courseId);
-		int videosCount = courseDTOList.size(); // as each section has one video
+		int videosCount = secDTOList.size(); // as each section has one video
 		int videoscompleted = userDetailList.size();
 
 		for (UserDetail userDetail : userDetailList) {
-			for (CoursesDTO section : courseDTOList) {
+			for (CoursesDTO section : secDTOList) {
 				if (section.getSk().equalsIgnoreCase(userDetail.getVid())) {
 					section.setCompleted(true);
 				}
@@ -217,17 +239,17 @@ public class CoursesController {
 		}
 		/** ------------to get percentage of course completed---------------------/ **/
 
-		List<Courses> coursesMetaList = coursesRepository.getMetaDetailsCourses(courseId);
-		Courses courselevel = coursesMetaList.get(0);
+		
 		CoursesDetailsDTO coursesDetailsDTO = new CoursesDetailsDTO();
-		coursesDetailsDTO.setSections(courseDTOList);
+		coursesDetailsDTO.setSections(secDTOList);
 		coursesDetailsDTO.setPercentage(percentage);
-		coursesDetailsDTO.setLevel(courselevel.getLevel());
-		coursesDetailsDTO.setType(courselevel.getType());
+		coursesDetailsDTO.setLevel(courselevelData.getLevel());
+		coursesDetailsDTO.setType(courselevelData.getType());
 		coursesDetailsDTO.setCourseId(courseId);
-		coursesDetailsDTO.setDescription(courselevel.getDescription());
-		coursesDetailsDTO.setLeveldesc(courselevel.getLeveldesc());
-		coursesDetailsDTO.setIncludes(courselevel.getIncludes());
+		coursesDetailsDTO.setDescription(courselevelData.getDescription());
+		coursesDetailsDTO.setLeveldesc(courselevelData.getLeveldesc());
+		coursesDetailsDTO.setIncludes(courselevelData.getIncludes());
+		coursesDetailsDTO.setOrder(courselevelData.getOrder());
 
 		return new ApiResponse(HttpStatus.OK, SUCCESS, coursesDetailsDTO);
 	}
@@ -260,7 +282,7 @@ public class CoursesController {
 		System.out.println("courseId : " + courseId);
 		System.out.println("teamId : " + teamId);
 
-		List<Courses> sectionList = coursesRepository.getCourses(courseId);
+		List<Courses> sectionList = coursesRepository.getCourseSections(courseId);
 		List<CoursesDTO> courseDTOList = new ArrayList();
 
 		for (Courses item : sectionList) {
@@ -312,6 +334,7 @@ public class CoursesController {
 		coursesDetailsDTO.setDescription(courselevel.getDescription());
 		coursesDetailsDTO.setLeveldesc(courselevel.getLeveldesc());
 		coursesDetailsDTO.setIncludes(courselevel.getIncludes());
+		coursesDetailsDTO.setOrder(courselevel.getOrder());
 
 		return new ApiResponse(HttpStatus.OK, SUCCESS, coursesDetailsDTO);
 	}
@@ -334,6 +357,29 @@ public class CoursesController {
 	@PutMapping("/courses/{courseId}")
 	public String updateCourse(@PathVariable("courseId") String courseId, @RequestBody Courses courses) {
 		return coursesRepository.update(courseId, courses);
+	}
+	
+	
+	@CrossOrigin
+	@GetMapping("/courses/meta/{courseId}/{sk}")
+	public ApiResponse getRow(@PathVariable("courseId") String courseId,@PathVariable("sk") String sk) {
+		System.out.println("row : ");
+		Courses row = coursesRepository.getRow(courseId,"S#"+sk);
+		System.out.println("row : "+ row);
+		
+		ResourceLink resourceLink = new ResourceLink();
+		resourceLink.setLink("content.pdf");
+		resourceLink.setTitle("Course Content");
+		resourceLink.setType("pdf");
+		
+		List<ResourceLink> list = new ArrayList<ResourceLink>();
+		list.add(resourceLink);
+		
+		row.getVideoLinks().get(0).setResourceLinks(list);
+		
+		 coursesRepository.update(row.getCourseId(),row);
+		
+		return new ApiResponse(HttpStatus.OK, SUCCESS, row);
 	}
 
 }

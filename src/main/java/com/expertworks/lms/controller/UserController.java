@@ -173,7 +173,7 @@ public class UserController {
 		
 		String userId = user.getUserId();
 		String randompwd =null;
-		User loadedUser = userRepository.load(user.getUserId());
+		User loadedUser = userRepository.load(user.getUserId()); 
 		if(loadedUser==null)
 		{
 			throw new Exception("User not found");

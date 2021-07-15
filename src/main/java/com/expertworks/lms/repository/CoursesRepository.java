@@ -14,7 +14,6 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBSaveExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
-import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
 import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedScanList;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
@@ -23,6 +22,7 @@ import com.amazonaws.services.dynamodbv2.model.ExpectedAttributeValue;
 import com.amazonaws.services.dynamodbv2.model.ScanRequest;
 import com.amazonaws.services.dynamodbv2.model.ScanResult;
 import com.expertworks.lms.model.Courses;
+import com.expertworks.lms.model.ResourceLink;
 
 @Repository
 public class CoursesRepository {
@@ -73,7 +73,7 @@ public class CoursesRepository {
 
 
 	
-	public List<Courses> getCourses(String courseId) {
+	public List<Courses> getCourseSections(String courseId) {
 		
 		Courses courses = new Courses();
 		courses.setCourseId(courseId);  
@@ -108,8 +108,7 @@ public class CoursesRepository {
 		        .withRangeKeyCondition("sk", rangeKeyCondition);
 		
 		List<Courses> list = dynamoDBMapper.query(Courses.class, queryExpression);
-		
-		
+			
 		//return dynamoDBMapper.load(Courses.class, courseId,rangeKey);
 		
 		return list;
@@ -128,12 +127,37 @@ public class CoursesRepository {
 				new ExpectedAttributeValue(new AttributeValue().withS(courseId))));
 		return courseId;
 	}
+	
+	public Courses getRow(String courseId,String rangeKey) {
+			System.out.println("rangekey:"+ rangeKey);
+		  return dynamoDBMapper.load(Courses.class, courseId,rangeKey);	
+			
+		}
 
+	  
+	  
+	
+	
 	public static void main(String[] args) {
 
 		CoursesRepository coursesRepository = new CoursesRepository();
 
-		coursesRepository.getmyCourses();
+		Courses courses = coursesRepository.getRow("7234", "S#0");
+		courses.getVideoLinks().forEach(video-> {
+			for(ResourceLink resourceLink : video.getResourceLinks())
+			{
+				System.out.println("getLink :"+resourceLink.getLink());
+				System.out.println("getTitle :"+resourceLink.getTitle());
+				System.out.println("getType :"+resourceLink.getType());
+			}
+				
+				
+			 
+			
+		});
+		
+		
+		//coursesRepository.getmyCourses();
 
 	}
  }

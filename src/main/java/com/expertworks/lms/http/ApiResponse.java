@@ -1,5 +1,8 @@
 package com.expertworks.lms.http;
 
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.StandardToStringStyle;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.springframework.http.HttpStatus;
 
 public class ApiResponse {
@@ -45,9 +48,12 @@ public class ApiResponse {
 
     @Override
 	public String toString() {
-		return "ApiResponse [statusCode=" + status + ", message=" + message +"]";
+	     StandardToStringStyle style = new StandardToStringStyle();
+	     style.setUseClassName(false);
+	     style.setUseIdentityHashCode(false);
+	    ToStringBuilder builder = new ReflectionToStringBuilder(this, style);
+	    return builder.toString();
 	}
-	
 	
 
 }

@@ -3,6 +3,8 @@ package com.expertworks.lms.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument;
 import com.expertworks.lms.http.ResourceLinkDTO;
@@ -147,6 +149,11 @@ public class VideoLink {
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+	
+	@Override
+	public String toString() {
+	    return ToStringBuilder.reflectionToString(this);
 	}
 
 }

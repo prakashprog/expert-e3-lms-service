@@ -32,6 +32,10 @@ public class Partner implements Comparable<Partner> {
 
 	@DynamoDBAttribute
 	private String name;
+	
+	@DynamoDBAttribute
+	private String email;
+	
 
 	@DynamoDBAttribute
 	private String groupId;
@@ -128,6 +132,16 @@ public class Partner implements Comparable<Partner> {
 
 	public void setGroupIds(List<String> groupIds) {
 		this.groupIds = groupIds;
+	}
+
+
+	public String getEmail() {
+		return email;
+	}
+
+
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
 	

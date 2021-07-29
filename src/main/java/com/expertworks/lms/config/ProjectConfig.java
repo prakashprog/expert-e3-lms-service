@@ -69,15 +69,15 @@ public class ProjectConfig extends ResourceServerConfigurerAdapter {
           });
     }
     
-//    @Bean
-//    public ResourceServerTokenServices tokenService() {
-//        RemoteTokenServices tokenServices = new RemoteTokenServices();
-//        tokenServices.setClientId(clientId);
-//        tokenServices.setClientSecret(secret);
-//        tokenServices.setCheckTokenEndpointUrl(checkTokenEndPoint);
-//        return tokenServices;
-//    }
-//    
+    @Bean
+    public ResourceServerTokenServices tokenService() {
+        RemoteTokenServices tokenServices = new RemoteTokenServices();
+        tokenServices.setClientId(clientId);
+        tokenServices.setClientSecret(secret);
+        tokenServices.setCheckTokenEndpointUrl(checkTokenEndPoint);
+        return tokenServices;
+    }
+    
 
     
     

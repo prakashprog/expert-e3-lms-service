@@ -101,7 +101,7 @@ public class EmailService {
 		final String SUBJECT = "Welcome to Expert Works.4";
 		final String HTMLBODY = "Hi " + username +",<br><br>"+"Welcome to Expert Works,"
 				+"<br>"+"Please login with below credentials"+"<br><br>"
-		        + "<b>Username</b> : " +"<i>" +userId+"</i><br>"
+		        + "<b>Login Id</b> : " +"<i>" +userId+"</i><br>"
 		        + "<b>Password</b> : " + "<i>"+password+"</i><br><hr>"
 				+ "<p>This email was sent from <a href='https://www.expert-works.com'>"
 				+ "expert-works.com</a> "
@@ -125,7 +125,7 @@ public class EmailService {
 		final String SUBJECT = "Password Reset for Expert-works";
 		final String HTMLBODY = "Hi " + username +",<br><br>"+"Welcome to Expert Works,"
 				+"<br>"+"Please login with below default credentials"+"<br><br>"
-		        + "<b>Username</b> : " +"<i>" +userId+"</i><br>"
+		        + "<b>Login Id</b> : " +"<i>" +userId+"</i><br>"
 		        + "<b>Password</b> : " + "<i>"+password+"</i><br><hr>"
 				+ "<p>This email was sent from <a href='https://www.expert-works.com'>"
 				+ "expert-works.com</a> "

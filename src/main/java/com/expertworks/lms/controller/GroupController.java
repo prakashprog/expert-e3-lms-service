@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.expertworks.lms.http.ApiResponse;
@@ -19,6 +20,7 @@ import com.expertworks.lms.http.GroupDTO;
 import com.expertworks.lms.model.Group;
 import com.expertworks.lms.model.Partner;
 import com.expertworks.lms.model.Team;
+import com.expertworks.lms.model.User;
 import com.expertworks.lms.repository.GroupRepository;
 import com.expertworks.lms.repository.PartnerRepository;
 
@@ -28,33 +30,34 @@ public class GroupController {
 
 	public static final String SUCCESS = "success";
 
-
 	@Autowired
 	private GroupRepository groupRepository;
-	
+
 	@Autowired
 	private PartnerRepository partnerRepository;
 
 	@CrossOrigin
 	@PostMapping("/group/{partnerId}")
 	public ApiResponse save(@PathVariable("partnerId") String partnerId, @RequestBody Group group) {
-		
+
 		group.setSk("details");
 		group.setPartnerId(partnerId);
 		Group savedGroup = groupRepository.save(group);
 		System.out.println("Group Saved " + savedGroup.getGroupId());
+
 		Partner partner = partnerRepository.get(partnerId).get(0);
 		partnerRepository.addGroup(partner.getPartnerId(), savedGroup);
 		return new ApiResponse(HttpStatus.OK, SUCCESS, savedGroup);
 	}
-  
-		
-	
+
 	@CrossOrigin
 	@GetMapping("/group")
-	public ApiResponse getAll() {
-
-		List<Group> list = groupRepository.getAll();
+	public ApiResponse getAll(@RequestParam(required = false, name = "partnerId") String partnerId) {
+		List<Group> list = null;
+		if (partnerId == null || partnerId.equalsIgnoreCase(""))
+			list = groupRepository.getAll();
+		else
+			list = groupRepository.queryOnGSI("partnerId-index", "partnerId", partnerId);
 		return new ApiResponse(HttpStatus.OK, SUCCESS, list);
 	}
 
@@ -62,8 +65,8 @@ public class GroupController {
 	@GetMapping("/group/{groupId}")
 	public ApiResponse get(@PathVariable("groupId") String groupId) {
 
-	   GroupDTO groupDTO = new GroupDTO();
-		
+		GroupDTO groupDTO = new GroupDTO();
+
 		List<Group> list = groupRepository.get(groupId);
 		for (Group group : list) {
 			if (group.getSk().equalsIgnoreCase("details")) {
@@ -78,28 +81,24 @@ public class GroupController {
 
 			}
 		}
-	    return new ApiResponse(HttpStatus.OK, SUCCESS, groupDTO);
+		return new ApiResponse(HttpStatus.OK, SUCCESS, groupDTO);
 	}
-	
-	
-	
 
 	@CrossOrigin
 	@DeleteMapping("/group/{groupId}")
 	public String delete(@PathVariable("contactId") String contactId) {
 		return groupRepository.delete(contactId);
 	}
-	
-	
+
 	@CrossOrigin
 	@PostMapping("/Group/addGroups/{GroupId}")
 	public ApiResponse addGroups(@PathVariable("GroupId") String GroupId, @RequestBody Group group) {
-		
-		Group newRow= new Group();	
+
+		Group newRow = new Group();
 		newRow.setGroupId(GroupId);
-		newRow.setSk("G#"+group.getGroupId());
+		newRow.setSk("G#" + group.getGroupId());
 		newRow.setGroupId(group.getGroupId());
-		Group savedRow=  groupRepository.save(newRow);
+		Group savedRow = groupRepository.save(newRow);
 		return new ApiResponse(HttpStatus.OK, SUCCESS, savedRow);
 	}
 

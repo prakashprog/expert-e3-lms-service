@@ -20,6 +20,7 @@ import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.ExpectedAttributeValue;
 import com.expertworks.lms.model.Group;
 import com.expertworks.lms.model.Team;
+import com.expertworks.lms.model.User;
 
 @Repository
 public class GroupRepository {
@@ -29,7 +30,7 @@ public class GroupRepository {
 
 	// full scan
 	public List<Group> getAll() {
-		DynamoDBScanExpression scanExpression = new DynamoDBScanExpression().withLimit(10);
+		DynamoDBScanExpression scanExpression = new DynamoDBScanExpression().withLimit(100);
 		PaginatedScanList<Group> paginatedScanList = dynamoDBMapper.scan(Group.class, scanExpression);
 
 		paginatedScanList.loadAllResults();
@@ -43,13 +44,32 @@ public class GroupRepository {
 		}
 
 		return list;
-
 	}
+	
+	
 
-	public List<Group> get(String GroupId) {
+	public List<Group> queryOnGSI(String indexName, String attributeName, String attributeValue) {
+
+		Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
+		eav.put(":val1", new AttributeValue().withS(attributeValue));
+
+		DynamoDBQueryExpression<Group> queryExpression = new DynamoDBQueryExpression<Group>()
+				.withIndexName(indexName).withKeyConditionExpression(attributeName + "= :val1")
+				.withExpressionAttributeValues(eav).withConsistentRead(false);//.withLimit(2);
+
+		QueryResultPage<Group> scanPage = dynamoDBMapper.queryPage(Group.class, queryExpression);
+		List<Group> list = scanPage.getResults();
+		System.out.println("Group List Size===========" + list.size());
+
+		return list;
+	}
+	
+	
+
+	public List<Group> get(String groupId) {
 
 		Group Group = new Group();
-		Group.setGroupId(GroupId);
+		Group.setGroupId(groupId);
 
 		DynamoDBQueryExpression<Group> dynamoDBQueryExpression = new DynamoDBQueryExpression().withHashKeyValues(Group);
 		PaginatedQueryList<Group> paginatedQueryList = dynamoDBMapper.query(Group.class, dynamoDBQueryExpression);

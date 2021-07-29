@@ -81,6 +81,8 @@ public class UserController {
 	public ApiResponse createUserForPartner(@RequestBody User user) throws Exception {
 
 		user.setUserName(user.getName());
+		user.setUserId(user.getEmail());
+		user.setTeamId("teamId5");  //defualt team Id
 		User savedUser = null;
 		String partnerId = null;
 		partnerId = tokenUtil.getPartner();
@@ -90,6 +92,13 @@ public class UserController {
 			Partner partner = partnerList.get(0);
 			user.setPartnerId(partner.getPartnerId());
 			user.setUserRole(ROLE_USER);
+			
+			User existingUser = userRepository.load(user.getUserId());
+			if(existingUser!=null)
+			{
+				throw new Exception("User already present with id : "+ user.getUserId());
+			}
+			
 			savedUser = userRepository.save(user);
 			emailService.sendCredentailsMessage(user.getEmail(), StringUtils.capitalize(user.getName()),
 					user.getUserId(), user.getPassword());

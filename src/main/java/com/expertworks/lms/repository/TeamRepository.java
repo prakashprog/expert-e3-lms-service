@@ -1,8 +1,10 @@
 package com.expertworks.lms.repository;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -13,8 +15,10 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBSaveExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
 import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedScanList;
+import com.amazonaws.services.dynamodbv2.datamodeling.QueryResultPage;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.ExpectedAttributeValue;
+import com.expertworks.lms.model.Group;
 import com.expertworks.lms.model.Team;
 import com.expertworks.lms.model.User;
 
@@ -38,9 +42,23 @@ public class TeamRepository {
 			Team element = iterator.next();
 			list.add(element);
 		}
+		return list;
+	}
+
+	public List<Team> queryOnGSI(String indexName, String attributeName, String attributeValue) {
+
+		Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
+		eav.put(":val1", new AttributeValue().withS(attributeValue));
+
+		DynamoDBQueryExpression<Team> queryExpression = new DynamoDBQueryExpression<Team>()
+				.withIndexName(indexName).withKeyConditionExpression(attributeName + "= :val1")
+				.withExpressionAttributeValues(eav).withConsistentRead(false);//.withLimit(2);
+
+		QueryResultPage<Team> scanPage = dynamoDBMapper.queryPage(Team.class, queryExpression);
+		List<Team> list = scanPage.getResults();
+		System.out.println("Group List Size===========" + list.size());
 
 		return list;
-
 	}
 
 	public List<Team> get(String TeamId) {

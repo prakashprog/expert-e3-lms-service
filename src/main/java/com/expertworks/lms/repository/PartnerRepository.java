@@ -32,7 +32,7 @@ public class PartnerRepository {
 
     //full scan
     public List<Partner> getAll() {
-		DynamoDBScanExpression scanExpression = new DynamoDBScanExpression().withLimit(10);
+		DynamoDBScanExpression scanExpression = new DynamoDBScanExpression().withLimit(100);
 		PaginatedScanList<Partner> paginatedScanList = dynamoDBMapper.scan(Partner.class, scanExpression);
 
 		paginatedScanList.loadAllResults();

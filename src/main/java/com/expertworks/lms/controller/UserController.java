@@ -5,12 +5,13 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.expertworks.lms.http.ApiResponse;
 import com.expertworks.lms.http.UserDTO;
@@ -32,14 +34,19 @@ import com.expertworks.lms.repository.UserRepository;
 import com.expertworks.lms.service.EmailService;
 import com.expertworks.lms.util.TokenUtil;
 
+//https://stackoverflow.com/questions/16232833/how-to-respond-with-http-400-error-in-a-spring-mvc-responsebody-method-returnin
+
 @RestController
 @Component
 public class UserController {
 
+	private final static Logger logger = LoggerFactory.getLogger(UserController.class);
+
 	public static final String SUCCESS = "success";
 	public static final String ROLE_ADMIN = "ROLE_ADMIN";
 	public static final String ROLE_USER = "ROLE_USER";
-	public static final String ROLE_MERCHANT = "ROLE_SUPERADMIN";
+	public static final String ROLE_SUPERADMIN = "ROLE_SUPERADMIN";
+	public static final String ACTION_DELETE = "DELETE";
 
 	@Autowired
 	private EmailService emailService;
@@ -61,28 +68,63 @@ public class UserController {
 
 	@CrossOrigin
 	@PostMapping("/user/{teamId}")
-	public ApiResponse createUserForTeam(@PathVariable("teamId") String teamId, @RequestBody User user) {
+	public ApiResponse createUserUnderTeam(@PathVariable("teamId") String teamId, @RequestBody User user)
+			throws Exception {
 
+		int userLimit = 4;// setting to default;
+		int userCount;
+		user.setUserLimit(String.valueOf(userLimit));
+		user.setUserId(user.getEmail());
 		user.setUserName(user.getName());
 		user.setTeamId(teamId);
+
+		if (user.getUserRole() == null)
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userRole is missing");
+
+		Team team = teamRepository.get(teamId).get(0); // check for team exists
+		if (team.getUserLimit() != null && team.getUserLimit().equalsIgnoreCase("")) {
+			userLimit = Integer.parseInt(team.getUserLimit());
+			user.setUserLimit(team.getUserLimit());
+		}
+
+		List teamUsers = userRepository.queryOnGSI("teamId-index", "teamId", teamId);
+		userCount = teamUsers.size();
+		logger.info("userCount:" + userCount + ";TeamId :" + teamId);
+		if (userCount >= userLimit) {
+			// throw new Exception("Maximun user count reached");
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Team Users Reached Maximun limit");
+		}
+
 		Group group = groupRepository.queryOnsk(teamId).get(0);
-		System.out.println("groupId : " + group.getGroupId());
+		logger.info("groupId : " + group.getGroupId());
 		user.setGroupId(group.getGroupId());
 		Partner partner = partnerRepository.queryOnsk(group.getGroupId()).get(0);
 		user.setPartnerId(partner.getPartnerId());
+
+		if (user.getUserRole() != null && user.getUserRole().equalsIgnoreCase(ROLE_ADMIN)) {
+			user.setPassword("admin");// default password
+		} else {
+			String randompwd = this.getRandomPassword(4);
+			user.setPassword(randompwd);
+		}
 		User savedUser = userRepository.save(user);
-		Team team = teamRepository.get(teamId).get(0); // check for existance
 		teamRepository.addUserToTeam(team.getTeamId(), savedUser);
+
+		emailService.sendCredentailsMessage(user.getEmail(), StringUtils.capitalize(user.getName()), user.getUserId(),
+				user.getPassword());
+
 		return new ApiResponse(HttpStatus.OK, SUCCESS, savedUser);
+
 	}
 
 	@CrossOrigin
 	@PostMapping("/user")
-	public ApiResponse createUserForPartner(@RequestBody User user) throws Exception {
+	// deprecated
+	public ApiResponse createUserUnderPartner(@RequestBody User user) throws Exception {
 
 		user.setUserName(user.getName());
 		user.setUserId(user.getEmail());
-		user.setTeamId("teamId5");  //defualt team Id
+		user.setTeamId("teamId5"); // defualt team Id
 		User savedUser = null;
 		String partnerId = null;
 		partnerId = tokenUtil.getPartner();
@@ -92,13 +134,12 @@ public class UserController {
 			Partner partner = partnerList.get(0);
 			user.setPartnerId(partner.getPartnerId());
 			user.setUserRole(ROLE_USER);
-			
+
 			User existingUser = userRepository.load(user.getUserId());
-			if(existingUser!=null)
-			{
-				throw new Exception("User already present with id : "+ user.getUserId());
+			if (existingUser != null) {
+				throw new Exception("User already present with id : " + user.getUserId());
 			}
-			
+
 			savedUser = userRepository.save(user);
 			emailService.sendCredentailsMessage(user.getEmail(), StringUtils.capitalize(user.getName()),
 					user.getUserId(), user.getPassword());
@@ -112,13 +153,17 @@ public class UserController {
 
 	@CrossOrigin
 	@GetMapping("/user")
-	public ApiResponse getAll() {
+	public ApiResponse getAll(@RequestParam(required = false, name = "teamId") String teamId) {
 
+		List<User> list = null;
 		String partnerId = null;
-		partnerId = tokenUtil.getPartner();
-		System.out.println("partnerId : " + partnerId);
-		List<User> list = userRepository.queryOnGSI("partnerId-index", "partnerId", partnerId);
-		 System.out.println("hello : "+ this.getRandomPassword(4));
+		if (teamId == null || teamId.equalsIgnoreCase("")) {
+			partnerId = tokenUtil.getPartner();
+			System.out.println("partnerId : " + partnerId);
+			list = userRepository.queryOnGSI("partnerId-index", "partnerId", partnerId);
+		} else
+			list = userRepository.queryOnGSI("teamId-index", "teamId", teamId);
+
 		return new ApiResponse(HttpStatus.OK, SUCCESS, list);
 	}
 
@@ -141,9 +186,11 @@ public class UserController {
 	}
 
 	@CrossOrigin
-	@DeleteMapping("/user/{userId}")
-	public String delete(@PathVariable("userId") String userId) {
-		return userRepository.delete(userId);
+	@PostMapping("/user/delete")
+	public ApiResponse delete(@RequestBody User user, @RequestParam(required = false, name = "action") String action) {
+		logger.info("In delete Method");
+		return new ApiResponse(HttpStatus.OK, SUCCESS, userRepository.delete(user.getUserId()));
+
 	}
 
 	@CrossOrigin
@@ -152,52 +199,47 @@ public class UserController {
 		user.setUserId(userId);
 		return new ApiResponse(HttpStatus.OK, SUCCESS, userRepository.update(userId, user));
 	}
-	
+
 	@CrossOrigin
 	@PostMapping("/user/changepwd")
-	public ApiResponse changePwd( @RequestBody User user,@RequestParam(required = false, name = "id") String id) throws Exception{
-		
+	public ApiResponse changePwd(@RequestBody User user, @RequestParam(required = false, name = "id") String id)
+			throws Exception {
+
 		String userId = user.getUserId();
 		String newPassword = user.getPassword();
 		User loadedUser = userRepository.load(user.getUserId());
 		System.out.println(loadedUser.getUserId());
-		System.out.println(loadedUser.getPassword()  + ":Id : "+id);
-		
-		
-		System.out.println("DB Password :" +loadedUser.getPassword() + " ;Old Password : "+user.getOldpassword());
-	
-		if(!loadedUser.getPassword().equals(user.getOldpassword()) || newPassword=="" )
-		{
+		System.out.println(loadedUser.getPassword() + ":Id : " + id);
+
+		System.out.println("DB Password :" + loadedUser.getPassword() + " ;Old Password : " + user.getOldpassword());
+
+		if (!loadedUser.getPassword().equals(user.getOldpassword()) || newPassword == "") {
 			throw new Exception("Password did not match");
-			
+
 		}
-		
+
 		return new ApiResponse(HttpStatus.OK, SUCCESS, userRepository.update(userId, user));
 	}
-	
-	
+
 	@CrossOrigin
 	@PostMapping("/user/resetpwd")
-	public ApiResponse forgotPwd( @RequestBody User user) throws Exception{
-		
+	public ApiResponse forgotPwd(@RequestBody User user) throws Exception {
+
 		String userId = user.getUserId();
-		String randompwd =null;
-		User loadedUser = userRepository.load(user.getUserId()); 
-		if(loadedUser==null)
-		{
-			throw new Exception("User not found");
+		String randompwd = null;
+		User loadedUser = userRepository.load(user.getUserId());
+		if (loadedUser == null) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, userId + " not found");
 		}
-		System.out.println("In DB userId: "+ loadedUser.getUserId()+ ", Pwd : "+ loadedUser.getPassword());
+		System.out.println("In DB userId: " + loadedUser.getUserId() + ", Pwd : " + loadedUser.getPassword());
 		randompwd = this.getRandomPassword(4);
 		loadedUser.setPassword(randompwd);
-		System.out.println("New Pwd: "+ randompwd);
+		System.out.println("New Pwd: " + randompwd);
 		user = userRepository.update(userId, loadedUser);
 		emailService.sendResetCredentailsMail(loadedUser.getEmail(), StringUtils.capitalize(user.getName()),
 				loadedUser.getUserId(), loadedUser.getPassword());
 		return new ApiResponse(HttpStatus.OK, SUCCESS, user);
 	}
-	
-	
 
 	public String getRandomPassword(int len) {
 		String chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghi" + "jklmnopqrstuvwxyz!@#$%&";
@@ -216,6 +258,16 @@ public class UserController {
 				possibleCharacters, new SecureRandom());
 		System.out.println(randomStr);
 
+	}
+
+	@CrossOrigin
+	@GetMapping("/geterror")
+	public ApiResponse getError() throws Exception {
+		int i = 0;
+		if (i == 0)
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Team Users Reached Maximun limit");
+		else
+			return new ApiResponse(HttpStatus.OK, SUCCESS, "some response");
 	}
 
 }

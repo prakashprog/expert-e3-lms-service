@@ -37,6 +37,12 @@ public class Team implements Comparable<Team> {
 	private String img;
 	
 	@DynamoDBAttribute
+	private String description;
+	
+	@DynamoDBAttribute
+	private String userLimit;
+	
+	@DynamoDBAttribute
 	private String groupId;
 	
 	
@@ -49,7 +55,10 @@ public class Team implements Comparable<Team> {
 		TeamDTO teamDTO = new TeamDTO();
 		teamDTO.setTeamId(this.teamId);
 		teamDTO.setSk(this.sk);
-		teamDTO.setName(this.name);	
+		teamDTO.setName(this.name);
+		teamDTO.setUserLimit(this.userLimit);
+		teamDTO.setDescription(this.description);
+		
 		return teamDTO;
 	}
 
@@ -120,6 +129,24 @@ public class Team implements Comparable<Team> {
 	public void setGroupId(String groupId) {
 		this.groupId = groupId;
 	}
+
+	public String getUserLimit() {
+		return userLimit;
+	}
+
+	public void setUserLimit(String userLimit) {
+		this.userLimit = userLimit;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	
 
 
 

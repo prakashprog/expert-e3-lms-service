@@ -3,6 +3,8 @@ package com.expertworks.lms.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -17,9 +19,12 @@ import com.amazonaws.services.simpleemail.model.Content;
 import com.amazonaws.services.simpleemail.model.Destination;
 import com.amazonaws.services.simpleemail.model.SendEmailRequest;
 import com.amazonaws.services.simpleemail.model.SendTemplatedEmailRequest;
+import com.expertworks.lms.controller.UserController;
 
 @org.springframework.stereotype.Service
 public class EmailService {
+	
+	private final static Logger logger = LoggerFactory.getLogger(EmailService.class);
 
 	// D:\aws email>aws ses delete-template --template-name WelcomeTemplate
 	// D:\aws email>aws ses create-template --cli-input-json
@@ -107,7 +112,7 @@ public class EmailService {
 				+ "expert-works.com</a> "
 		        + "<br><br><br> Thanks,<br> Expert Works Team.</a> ";
 		final String TEXTBODY = "This email was sent from <a href='https://www.expert-works.com'>\"";
-
+		logger.info("Sending mail to :"+to );
 		SendEmailRequest request = new SendEmailRequest().withDestination(new Destination().withToAddresses(to))
 				.withMessage(new com.amazonaws.services.simpleemail.model.Message()
 						.withBody(new Body().withHtml(new Content().withCharset("UTF-8").withData(HTMLBODY))

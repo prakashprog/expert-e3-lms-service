@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.expertworks.lms.model.Group;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -18,6 +19,10 @@ public class PartnerDTO implements Comparable<PartnerDTO> {
     private Date createdDate;
  	private String name;
  	private String img;
+
+	private String mobile;
+	private String address;
+	
 	private List<Group> groups = new ArrayList();
 	
  	
@@ -68,6 +73,26 @@ public class PartnerDTO implements Comparable<PartnerDTO> {
 
 	public void setGroups(List<Group> groups) {
 		this.groups = groups;
+	}
+
+
+	public String getMobile() {
+		return mobile;
+	}
+
+
+	public void setMobile(String mobile) {
+		this.mobile = mobile;
+	}
+
+
+	public String getAddress() {
+		return address;
+	}
+
+
+	public void setAddress(String address) {
+		this.address = address;
 	}
 
 

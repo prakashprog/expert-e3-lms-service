@@ -18,7 +18,6 @@ import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedScanList;
 import com.amazonaws.services.dynamodbv2.datamodeling.QueryResultPage;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.ExpectedAttributeValue;
-import com.expertworks.lms.model.Group;
 import com.expertworks.lms.model.Team;
 import com.expertworks.lms.model.User;
 
@@ -61,12 +60,12 @@ public class TeamRepository {
 		return list;
 	}
 
-	public List<Team> get(String TeamId) {
+	public List<Team> get(String teamId) {
 
-		Team Team = new Team();
-		Team.setTeamId(TeamId);
+		Team team = new Team();
+		team.setTeamId(teamId);
 
-		DynamoDBQueryExpression<Team> dynamoDBQueryExpression = new DynamoDBQueryExpression().withHashKeyValues(Team);
+		DynamoDBQueryExpression<Team> dynamoDBQueryExpression = new DynamoDBQueryExpression().withHashKeyValues(team);
 		PaginatedQueryList<Team> paginatedQueryList = dynamoDBMapper.query(Team.class, dynamoDBQueryExpression);
 		paginatedQueryList.loadAllResults();
 
@@ -81,6 +80,10 @@ public class TeamRepository {
 		return list;
 
 	}
+	
+	
+	
+	
 
 	public Team addUserToTeam(String teamId, User user) {
 

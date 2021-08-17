@@ -125,7 +125,7 @@
 			<version>1.0.10.RELEASE</version>
 		</dependency>
 
-		<!-- ===============================added for oauth START -->
+		<!-- ===============================added for oauth END -->
 
 
 		<dependency>
@@ -160,6 +160,14 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 
+		</dependency>
+		
+		<!-- ==============================PayPal START -->
+		
+		<dependency>
+			<groupId>com.paypal.sdk</groupId>
+			<artifactId>rest-api-sdk</artifactId>
+			<version>1.4.2</version>
 		</dependency>
 
 	</dependencies>

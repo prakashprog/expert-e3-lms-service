@@ -37,12 +37,12 @@ public class TeamController {
 
 	@CrossOrigin
 	@PostMapping("/team/{groupId}")
-	public ApiResponse create(@PathVariable("groupId") String groupId, @RequestBody Team Team) {
+	public ApiResponse create(@PathVariable("groupId") String groupId, @RequestBody Team team) {
 
-		Team.setSk("details");
-		Team.setGroupId(groupId);
+		team.setSk("details");
+		team.setGroupId(groupId);
 
-		Team savedTeam = teamRepository.save(Team);
+		Team savedTeam = teamRepository.save(team);
 		Group group = groupRepository.get(groupId).get(0);
 		groupRepository.addTeamToGroup(group.getGroupId(), savedTeam);
 		return new ApiResponse(HttpStatus.OK, SUCCESS, savedTeam);

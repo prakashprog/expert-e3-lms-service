@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.expertworks.lms.model.Team;
 
 
@@ -16,6 +17,8 @@ public class GroupDTO implements Comparable<GroupDTO> {
 	private String name;
 	private String teamId;
 	private String img;
+
+	private String region;
 	private List<Team> teams = new ArrayList();
 
 	public int compareTo(GroupDTO partner) {
@@ -79,6 +82,14 @@ public class GroupDTO implements Comparable<GroupDTO> {
 
 	public void setTeams(List<Team> teams) {
 		this.teams = teams;
+	}
+
+	public String getRegion() {
+		return region;
+	}
+
+	public void setRegion(String region) {
+		this.region = region;
 	}
 
 	

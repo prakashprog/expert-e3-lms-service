@@ -18,6 +18,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedScanList;
 import com.amazonaws.services.dynamodbv2.datamodeling.QueryResultPage;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.ExpectedAttributeValue;
+import com.amazonaws.services.dynamodbv2.model.Select;
 import com.expertworks.lms.model.User;
 
 @Repository
@@ -63,8 +64,10 @@ public class UserRepository {
 		}
 
 		return list;
-
 	}
+	
+	
+	
 
 	public List<User> queryOnGSI(String indexName, String attributeName, String attributeValue) {
 

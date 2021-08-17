@@ -55,7 +55,9 @@ public class ProjectConfig extends ResourceServerConfigurerAdapter {
     
     @Override
     public void configure(HttpSecurity http) throws Exception {
-    	 http.csrf().disable().authorizeRequests().antMatchers("/actuator/prometheus","/actuator/*","/courses/","/public/courses","/public/courses/*","/public/contactus")
+    	 http.csrf().disable().authorizeRequests().antMatchers("/pay/success","/pay/cancel","/geterror",
+    			 "/user/resetpwd","/actuator/prometheus",
+    			 "/actuator/*","/courses/","/public/courses","/public/courses/*","/public/contactus")
          .permitAll().anyRequest().authenticated()
          .and().exceptionHandling().and().sessionManagement()
          .sessionCreationPolicy(SessionCreationPolicy.STATELESS);

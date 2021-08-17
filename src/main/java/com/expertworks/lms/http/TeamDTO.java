@@ -14,6 +14,8 @@ public class TeamDTO implements Comparable<TeamDTO> {
 	private String sk;
 	private Date createdDate;
 	private String name;
+	private String userLimit;
+	private String description;
 
 	private String img;
 	private List<User> users = new ArrayList();
@@ -60,6 +62,24 @@ public class TeamDTO implements Comparable<TeamDTO> {
 	public void setUsers(List<User> users) {
 		this.users = users;
 	}
+
+	public String getUserLimit() {
+		return userLimit;
+	}
+
+	public void setUserLimit(String userLimit) {
+		this.userLimit = userLimit;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	
 
 	
 	

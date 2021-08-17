@@ -43,6 +43,11 @@ public class Partner implements Comparable<Partner> {
 	@DynamoDBAttribute
 	private String img;
 
+	@DynamoDBAttribute
+	private String mobile;
+	
+	@DynamoDBAttribute
+	private String address;
 	
 	private List<String> groupIds;
 
@@ -58,6 +63,8 @@ public class Partner implements Comparable<Partner> {
 		partnerDTO.setPartnerId(this.partnerId);
 		partnerDTO.setSk(this.sk);
 		partnerDTO.setName(this.name);
+		partnerDTO.setMobile(this. mobile);
+		partnerDTO.setAddress(this.address);
 		
 	
 		return partnerDTO;
@@ -142,6 +149,26 @@ public class Partner implements Comparable<Partner> {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+
+	public String getMobile() {
+		return mobile;
+	}
+
+
+	public void setMobile(String mobile) {
+		this.mobile = mobile;
+	}
+
+
+	public String getAddress() {
+		return address;
+	}
+
+
+	public void setAddress(String address) {
+		this.address = address;
 	}
 
 	

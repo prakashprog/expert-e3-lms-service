@@ -40,6 +40,9 @@ public class Group implements Comparable<Group> {
 	
 	@DynamoDBAttribute
 	private String partnerId;
+	
+	@DynamoDBAttribute
+	private String region;
 
 	public int compareTo(Group partner) {
 		return sk.compareTo(partner.sk);
@@ -49,7 +52,8 @@ public class Group implements Comparable<Group> {
 		GroupDTO groupDTO = new GroupDTO();
 		groupDTO.setTeamId(this.teamId);
 		groupDTO.setSk(this.sk);
-		groupDTO.setName(this.name);	
+		groupDTO.setName(this.name);
+		groupDTO.setRegion(this.region);	
 		return groupDTO;
 	}
 
@@ -119,6 +123,14 @@ public class Group implements Comparable<Group> {
 
 	public void setPartnerId(String partnerId) {
 		this.partnerId = partnerId;
+	}
+
+	public String getRegion() {
+		return region;
+	}
+
+	public void setRegion(String region) {
+		this.region = region;
 	}
 
 	

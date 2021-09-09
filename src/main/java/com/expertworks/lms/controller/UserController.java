@@ -1,5 +1,7 @@
 package com.expertworks.lms.controller;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.Random;
@@ -8,7 +10,10 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -20,8 +25,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.view.RedirectView;
 
 import com.expertworks.lms.http.ApiResponse;
+import com.expertworks.lms.http.TransferDTO;
 import com.expertworks.lms.http.UserDTO;
 import com.expertworks.lms.model.Group;
 import com.expertworks.lms.model.Partner;
@@ -47,6 +54,9 @@ public class UserController {
 	public static final String ROLE_USER = "ROLE_USER";
 	public static final String ROLE_SUPERADMIN = "ROLE_SUPERADMIN";
 	public static final String ACTION_DELETE = "DELETE";
+	public static final String TEAM_B2C = "TEAM_B2C";
+	public static final String USER_NOTVERIFIED = "NOTVERIFIED";
+	public static final String USER_VERIFIED = "VERIFIED";
 
 	@Autowired
 	private EmailService emailService;
@@ -66,14 +76,92 @@ public class UserController {
 	@Autowired
 	TokenUtil tokenUtil;
 
+	@Value("${email.verify.sucessurl}")
+	private String emailSuccess;
+
+	@Value("${email.verify.failureurl}")
+	private String emailFailed;
+
+	@CrossOrigin
+	@PostMapping("/public/signup")
+	public ApiResponse createSignUp(@RequestBody User user) throws Exception {
+
+		User savedUser = null;
+		savedUser = userRepository.load(user.getEmail());
+		if (savedUser != null)
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, user.getEmail() + " already exists ");
+
+		user.setUserId(user.getEmail());
+		user.setUserName(user.getName());
+		user.setTeamId(TEAM_B2C);
+		user.setStatus(USER_NOTVERIFIED);
+		user.setUserRole(ROLE_USER);
+		user.setEnabled(false);// By default user is disabled
+		user.setStatus(USER_NOTVERIFIED);
+		savedUser = userRepository.save(user);
+
+		emailService.sendEmailVerification(user.getEmail(), StringUtils.capitalize(user.getName()), user.getUserId(),
+				savedUser.getVcode());
+		return new ApiResponse(HttpStatus.OK, SUCCESS, savedUser);
+	}
+
+	@CrossOrigin
+	@GetMapping("/public/signup/{userId}/{verificationtoken}")
+	public RedirectView verifyEmail(@PathVariable("userId") String userId,
+			@PathVariable("verificationtoken") String verificationtoken) throws Exception {
+
+		logger.info("verificationtoken:" + verificationtoken + "; userId : " + userId);
+		User savedUser = userRepository.load(userId);
+
+		logger.info("savedUser.vcode :" + savedUser.getVcode());
+		RedirectView redirectView = new RedirectView();
+
+		if (savedUser.getVcode().equals(verificationtoken)) {
+			System.out.println("emailSuccess :" + emailSuccess);
+			redirectView.setUrl("https://www.expert-works.com");
+			savedUser.setEnabled(true);
+			savedUser.setStatus(USER_VERIFIED);
+			userRepository.update(userId, savedUser);
+
+		} else
+			redirectView.setUrl("https://www.expert-works.com/error");
+
+		return redirectView;
+	}
+
+	@CrossOrigin
+	@GetMapping("/to-be-redirected")
+	public ResponseEntity<Object> redirectToExternalUrl() throws URISyntaxException {
+		URI yahoo = new URI("http://www.yahoo.com");
+		HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.setLocation(yahoo);
+		return new ResponseEntity<>(httpHeaders, HttpStatus.SEE_OTHER);
+	}
+
+	@CrossOrigin
+	@PostMapping("/user/transfer/{userId}")
+	public ApiResponse transferUser(@PathVariable("userId") String userId, @RequestBody TransferDTO transferDTO)
+			throws Exception {
+
+		User user = userRepository.load(userId);
+		if (user.getTeamId().equals(transferDTO.getFromTeam())) {
+			Team team = teamRepository.load(transferDTO.getToTeam());
+			user.setTeamId(team.getTeamId());
+			user = userRepository.update(userId, user);
+		} else
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad Request");
+		return new ApiResponse(HttpStatus.OK, SUCCESS, user);
+
+	}
+
 	@CrossOrigin
 	@PostMapping("/user/{teamId}")
 	public ApiResponse createUserUnderTeam(@PathVariable("teamId") String teamId, @RequestBody User user)
 			throws Exception {
 
-		int userLimit = 4;// setting to default;
+		int userLimitDB = 4;// setting to default; ideally should come from DB
 		int userCount;
-		user.setUserLimit(String.valueOf(userLimit));
+		user.setUserLimit(String.valueOf(userLimitDB));
 		user.setUserId(user.getEmail());
 		user.setUserName(user.getName());
 		user.setTeamId(teamId);
@@ -82,20 +170,23 @@ public class UserController {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userRole is missing");
 
 		Team team = teamRepository.get(teamId).get(0); // check for team exists
+		Group group = groupRepository.queryOnsk(teamId).get(0);
+		int groupUserLimit = Integer.parseInt(group.getUserLimit());
+		userLimitDB = groupUserLimit;
+
 		if (team.getUserLimit() != null && team.getUserLimit().equalsIgnoreCase("")) {
-			userLimit = Integer.parseInt(team.getUserLimit());
+			// userLimitDB = Integer.parseInt(team.getUserLimit()); // commented to move to
+			// group
 			user.setUserLimit(team.getUserLimit());
 		}
-
 		List teamUsers = userRepository.queryOnGSI("teamId-index", "teamId", teamId);
 		userCount = teamUsers.size();
 		logger.info("userCount:" + userCount + ";TeamId :" + teamId);
-		if (userCount >= userLimit) {
-			// throw new Exception("Maximun user count reached");
+		if (userCount >= userLimitDB) {
+			// throw new Exception("Maximum user count reached");
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Team Users Reached Maximun limit");
 		}
 
-		Group group = groupRepository.queryOnsk(teamId).get(0);
 		logger.info("groupId : " + group.getGroupId());
 		user.setGroupId(group.getGroupId());
 		Partner partner = partnerRepository.queryOnsk(group.getGroupId()).get(0);
@@ -109,7 +200,6 @@ public class UserController {
 		}
 		User savedUser = userRepository.save(user);
 		teamRepository.addUserToTeam(team.getTeamId(), savedUser);
-
 		emailService.sendCredentailsMessage(user.getEmail(), StringUtils.capitalize(user.getName()), user.getUserId(),
 				user.getPassword());
 
@@ -118,13 +208,13 @@ public class UserController {
 	}
 
 	@CrossOrigin
-	@PostMapping("/user")
-	// deprecated
+	@PostMapping("/user") // deprecated
+
 	public ApiResponse createUserUnderPartner(@RequestBody User user) throws Exception {
 
 		user.setUserName(user.getName());
 		user.setUserId(user.getEmail());
-		user.setTeamId("teamId5"); // defualt team Id
+		user.setTeamId("teamId5"); // Default team Id
 		User savedUser = null;
 		String partnerId = null;
 		partnerId = tokenUtil.getPartner();

@@ -31,9 +31,7 @@ public class UserRepository {
 	public List<User> getAll() {
 		DynamoDBScanExpression scanExpression = new DynamoDBScanExpression().withLimit(10);
 		PaginatedScanList<User> paginatedScanList = dynamoDBMapper.scan(User.class, scanExpression);
-
 		paginatedScanList.loadAllResults();
-
 		List<User> list = new ArrayList<User>(paginatedScanList.size());
 
 		Iterator<User> iterator = paginatedScanList.iterator();
@@ -41,7 +39,6 @@ public class UserRepository {
 			User element = iterator.next();
 			list.add(element);
 		}
-
 		return list;
 
 	}
@@ -56,17 +53,13 @@ public class UserRepository {
 		paginatedQueryList.loadAllResults();
 
 		List<User> list = new ArrayList<User>(paginatedQueryList.size());
-
 		Iterator<User> iterator = paginatedQueryList.iterator();
 		while (iterator.hasNext()) {
 			User element = iterator.next();
 			list.add(element);
 		}
-
 		return list;
 	}
-	
-	
 	
 
 	public List<User> queryOnGSI(String indexName, String attributeName, String attributeValue) {
@@ -79,19 +72,14 @@ public class UserRepository {
 				.withExpressionAttributeValues(eav).withConsistentRead(false);//.withLimit(2);
 
 		QueryResultPage<User> scanPage = dynamoDBMapper.queryPage(User.class, queryExpression);
-
 		List<User> list = scanPage.getResults();
-
 		System.out.println("Partner List Size===========" + list.size());
-
 		return list;
 	}
-
 	
 
 	public User save(User user) {
-		
-		
+			
 		dynamoDBMapper.save(user);
 		return user;
 	}
@@ -110,7 +98,6 @@ public class UserRepository {
 		
 		User existingUser = dynamoDBMapper.load(User.class, userId);
 		return existingUser;
-		
 	}
 
 	public User update(String userId, User user) {
@@ -128,6 +115,15 @@ public class UserRepository {
 		{
 			existingUser.setEmail(user.getEmail());
 		}
+		if(user.isEnabled()!=false)
+		{
+			existingUser.setEnabled(user.isEnabled());
+		}
+		if(user.getStatus()!=null && !user.getStatus().equals(""))
+		{
+			existingUser.setStatus(user.getStatus());
+		}
+		
 				
 		dynamoDBMapper.save(existingUser, new DynamoDBSaveExpression().withExpectedEntry("userId",
 				new ExpectedAttributeValue(new AttributeValue().withS(userId))));

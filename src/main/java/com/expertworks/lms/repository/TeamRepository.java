@@ -49,9 +49,9 @@ public class TeamRepository {
 		Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
 		eav.put(":val1", new AttributeValue().withS(attributeValue));
 
-		DynamoDBQueryExpression<Team> queryExpression = new DynamoDBQueryExpression<Team>()
-				.withIndexName(indexName).withKeyConditionExpression(attributeName + "= :val1")
-				.withExpressionAttributeValues(eav).withConsistentRead(false);//.withLimit(2);
+		DynamoDBQueryExpression<Team> queryExpression = new DynamoDBQueryExpression<Team>().withIndexName(indexName)
+				.withKeyConditionExpression(attributeName + "= :val1").withExpressionAttributeValues(eav)
+				.withConsistentRead(false);// .withLimit(2);
 
 		QueryResultPage<Team> scanPage = dynamoDBMapper.queryPage(Team.class, queryExpression);
 		List<Team> list = scanPage.getResults();
@@ -80,10 +80,11 @@ public class TeamRepository {
 		return list;
 
 	}
-	
-	
-	
-	
+
+	public Team load(String teamId) {
+		Team team = dynamoDBMapper.load(Team.class, teamId);
+		return team;
+	}
 
 	public Team addUserToTeam(String teamId, User user) {
 

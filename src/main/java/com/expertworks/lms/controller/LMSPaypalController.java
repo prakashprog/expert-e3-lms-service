@@ -16,6 +16,7 @@ import com.paypal.api.payments.Links;
 import com.paypal.api.payments.Payment;
 import com.paypal.base.rest.PayPalRESTException;
 //https://medium.com/oril/spring-boot-paypal-angular-2-9ca70d940e5f
+//https://www.youtube.com/watch?v=tkN4EQt1P6I
 @RestController
 public class LMSPaypalController {
 
@@ -56,7 +57,7 @@ public class LMSPaypalController {
 
 	@CrossOrigin
 	@PostMapping("/payurl")
-	public String paymenturl(@RequestBody PayPalOrder order) {
+	public String paymenturl(@RequestBody PayPalOrder order) throws Exception {
   
 		try {
 			Payment payment = service.createPayment(order.getPrice(), order.getCurrency(), order.getMethod(),
@@ -72,6 +73,7 @@ public class LMSPaypalController {
 		} catch (PayPalRESTException e) {
 
 			e.printStackTrace();
+			throw e;
 		}
 		return "No url generated";
 	}

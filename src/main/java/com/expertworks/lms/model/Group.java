@@ -43,6 +43,9 @@ public class Group implements Comparable<Group> {
 	
 	@DynamoDBAttribute
 	private String region;
+	
+	@DynamoDBAttribute
+	private String userLimit;
 
 	public int compareTo(Group partner) {
 		return sk.compareTo(partner.sk);
@@ -53,7 +56,9 @@ public class Group implements Comparable<Group> {
 		groupDTO.setTeamId(this.teamId);
 		groupDTO.setSk(this.sk);
 		groupDTO.setName(this.name);
-		groupDTO.setRegion(this.region);	
+		groupDTO.setRegion(this.region);
+		groupDTO.setUserLimit(this.userLimit);
+		
 		return groupDTO;
 	}
 
@@ -131,6 +136,14 @@ public class Group implements Comparable<Group> {
 
 	public void setRegion(String region) {
 		this.region = region;
+	}
+
+	public String getUserLimit() {
+		return userLimit;
+	}
+
+	public void setUserLimit(String userLimit) {
+		this.userLimit = userLimit;
 	}
 
 	

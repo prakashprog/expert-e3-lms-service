@@ -123,6 +123,34 @@ public class EmailService {
 
 	}
 	
+	public void sendEmailVerification(String to, String username,String userId,String verificationKey) {
+
+		final String FROM = "Sales@expert-works.com";
+		//final String TO = "sskprakash@gmail.com";
+		final String SUBJECT = "Welcome to Expert Works , please verify your email!";
+		
+		String verificationUrl= "<a href=https://api.expert-works.com/public/signup/"+userId+"/"+verificationKey+">Verify Email</a>";
+		//String verificationUrl= "<a href=http://localhost:9091/public/signup/"+userId+"/"+verificationKey+">Verify Email</a>";
+		//String verificationUrl= "<a href=https://www.expert-works.com/public/signup/"+userId+"/"+verificationKey+">Verify Email</a>";
+		final String HTMLBODY = "Hi " + username +",<br><br>"+"Welcome to Expert Works,"
+				+"<br>"+"We recently received a request to create an account. To verify that you made this request, we're sending this confirmation email."+"<br><br>"
+		        + "<b>"+verificationUrl+"<br><hr>"
+	
+				+ "<p>This email was sent from <a href='https://www.expert-works.com'>"
+				+ "expert-works.com</a> "
+		        + "<br><br><br> Thanks,<br> Expert Works Team.</a> ";
+		final String TEXTBODY = "This email was sent from <a href='https://www.expert-works.com'>\"";
+		logger.info("Sending mail to :"+to );
+		SendEmailRequest request = new SendEmailRequest().withDestination(new Destination().withToAddresses(to))
+				.withMessage(new com.amazonaws.services.simpleemail.model.Message()
+						.withBody(new Body().withHtml(new Content().withCharset("UTF-8").withData(HTMLBODY))
+								.withText(new Content().withCharset("UTF-8").withData(TEXTBODY)))
+						.withSubject(new Content().withCharset("UTF-8").withData(SUBJECT)))
+				.withSource(FROM);
+		client.sendEmail(request);
+
+	}
+	
 	public void sendResetCredentailsMail(String to, String username , String userId,String password) {
 
 		final String FROM = "Sales@expert-works.com";

@@ -17,6 +17,7 @@ public class GroupDTO implements Comparable<GroupDTO> {
 	private String name;
 	private String teamId;
 	private String img;
+	private String userLimit;
 
 	private String region;
 	private List<Team> teams = new ArrayList();
@@ -90,6 +91,14 @@ public class GroupDTO implements Comparable<GroupDTO> {
 
 	public void setRegion(String region) {
 		this.region = region;
+	}
+
+	public String getUserLimit() {
+		return userLimit;
+	}
+
+	public void setUserLimit(String userLimit) {
+		this.userLimit = userLimit;
 	}
 
 	

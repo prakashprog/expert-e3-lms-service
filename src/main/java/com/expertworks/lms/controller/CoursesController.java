@@ -83,7 +83,7 @@ public class CoursesController {
 	}
 
 	// get all courses
-	@LogExecutionTime
+	//@LogExecutionTime
 	@GetMapping("/public/courses")
 	@CrossOrigin
 	public ApiResponse getallCourses() {

@@ -122,6 +122,12 @@ public class GroupRepository {
 		dynamoDBMapper.save(Group);
 		return Group;
 	}
+	
+	public Group load(String groupId,String sk) {
+		Group group = dynamoDBMapper.load(Group.class,groupId,sk);
+		return group;
+	}
+
 
 	public String delete(String GroupId) {
 		Group teamCourses = dynamoDBMapper.load(Group.class, GroupId);

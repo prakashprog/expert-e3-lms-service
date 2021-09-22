@@ -64,7 +64,9 @@ public class Courses implements Comparable<Courses> {
 	@DynamoDBAttribute
 	private String order;
 
-
+	@DynamoDBAttribute
+	private String price;
+	
 	public int compareTo(Courses courses) {
 		return sk.compareTo(courses.sk);
 
@@ -274,6 +276,14 @@ public class Courses implements Comparable<Courses> {
 	     style.setUseIdentityHashCode(false);
 	    ToStringBuilder builder = new ReflectionToStringBuilder(this, style);
 	    return builder.toString();
+	}
+
+	public String getPrice() {
+		return price;
+	}
+
+	public void setPrice(String price) {
+		this.price = price;
 	}
 
 }

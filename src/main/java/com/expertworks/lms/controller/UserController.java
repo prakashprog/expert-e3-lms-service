@@ -55,6 +55,7 @@ public class UserController {
 	public static final String ROLE_SUPERADMIN = "ROLE_SUPERADMIN";
 	public static final String ACTION_DELETE = "DELETE";
 	public static final String TEAM_B2C = "TEAM_B2C";
+	public static final String TEAM_ADMIN = "TEAM_ADMIN";
 	public static final String USER_NOTVERIFIED = "NOTVERIFIED";
 	public static final String USER_VERIFIED = "VERIFIED";
 
@@ -71,7 +72,7 @@ public class UserController {
 	private TeamRepository teamRepository;
 
 	@Autowired
-	private PartnerRepository partnerRepository;
+	private PartnerRepository partnerRepository;  
 
 	@Autowired
 	TokenUtil tokenUtil;
@@ -145,7 +146,7 @@ public class UserController {
 
 		User user = userRepository.load(userId);
 		if (user.getTeamId().equals(transferDTO.getFromTeam())) {
-			Team team = teamRepository.load(transferDTO.getToTeam());
+			Team team = teamRepository.load(transferDTO.getToTeam(), "details");
 			user.setTeamId(team.getTeamId());
 			user = userRepository.update(userId, user);
 		} else
@@ -154,6 +155,9 @@ public class UserController {
 
 	}
 
+	/*
+	 * Adding user under the Team.
+	 */
 	@CrossOrigin
 	@PostMapping("/user/{teamId}")
 	public ApiResponse createUserUnderTeam(@PathVariable("teamId") String teamId, @RequestBody User user)
@@ -161,36 +165,44 @@ public class UserController {
 
 		int userLimitDB = 4;// setting to default; ideally should come from DB
 		int userCount;
-		user.setUserLimit(String.valueOf(userLimitDB));
 		user.setUserId(user.getEmail());
 		user.setUserName(user.getName());
 		user.setTeamId(teamId);
 
 		if (user.getUserRole() == null)
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userRole is missing");
+		// List<Team> teamList = teamRepository.get(teamId); // check for team exists
+		// Team team = teamList.get(0);
+		Team team = teamRepository.load(teamId, "details");
 
-		Team team = teamRepository.get(teamId).get(0); // check for team exists
-		Group group = groupRepository.queryOnsk(teamId).get(0);
+		if (team == null)
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Team is missing");
+		System.out.println("Team from DB : " + team.getTeamId());
+		// Group group = groupRepository.queryOnsk(team).get(0);
+		Group group = groupRepository.load(team.getGroupId(), "details");
+		if (group == null)
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Group is missing");
+		System.out.println("Group from DB : " + group.getGroupId());
+		if (group.getUserLimit() == null)
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Limit on Group " + team.getGroupId() + " is missing");
+		System.out.println("getUserLimit in GroupTable from DB : " + group.getUserLimit());
 		int groupUserLimit = Integer.parseInt(group.getUserLimit());
-		userLimitDB = groupUserLimit;
 
-		if (team.getUserLimit() != null && team.getUserLimit().equalsIgnoreCase("")) {
-			// userLimitDB = Integer.parseInt(team.getUserLimit()); // commented to move to
-			// group
-			user.setUserLimit(team.getUserLimit());
-		}
+		userLimitDB = groupUserLimit;
 		List teamUsers = userRepository.queryOnGSI("teamId-index", "teamId", teamId);
 		userCount = teamUsers.size();
-		logger.info("userCount:" + userCount + ";TeamId :" + teamId);
+		logger.info("Current userCount in DB for Team :" + userCount + "(TeamId :" + teamId + ")");
 		if (userCount >= userLimitDB) {
 			// throw new Exception("Maximum user count reached");
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Team Users Reached Maximun limit");
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+					"Team Users Reached Maximun limit : " + userLimitDB);
 		}
 
-		logger.info("groupId : " + group.getGroupId());
 		user.setGroupId(group.getGroupId());
 		Partner partner = partnerRepository.queryOnsk(group.getGroupId()).get(0);
 		user.setPartnerId(partner.getPartnerId());
+		user.setUserLimit(String.valueOf(userLimitDB));
 
 		if (user.getUserRole() != null && user.getUserRole().equalsIgnoreCase(ROLE_ADMIN)) {
 			user.setPassword("admin");// default password
@@ -207,55 +219,146 @@ public class UserController {
 
 	}
 
+	/*
+	 * Adding user under the Group
+	 */
 	@CrossOrigin
-	@PostMapping("/user") // deprecated
+	@PostMapping("/user")
+	public ApiResponse createUser(@RequestParam(required = true, name = "groupId") String groupId,
+			@RequestParam(required = false, name = "teamId") String teamId, @RequestBody User user) throws Exception {
 
-	public ApiResponse createUserUnderPartner(@RequestBody User user) throws Exception {
-
-		user.setUserName(user.getName());
+		int userLimitDB = 4;// setting to default; ideally should come from DB
+		int userCount;
 		user.setUserId(user.getEmail());
-		user.setTeamId("teamId5"); // Default team Id
-		User savedUser = null;
-		String partnerId = null;
-		partnerId = tokenUtil.getPartner();
-		System.out.println("partnerId for User : " + partnerId);
-		List<Partner> partnerList = partnerRepository.get(partnerId);
-		if (partnerList != null && partnerList.size() > 0) {
-			Partner partner = partnerList.get(0);
-			user.setPartnerId(partner.getPartnerId());
-			user.setUserRole(ROLE_USER);
-
-			User existingUser = userRepository.load(user.getUserId());
-			if (existingUser != null) {
-				throw new Exception("User already present with id : " + user.getUserId());
-			}
-
-			savedUser = userRepository.save(user);
-			emailService.sendCredentailsMessage(user.getEmail(), StringUtils.capitalize(user.getName()),
-					user.getUserId(), user.getPassword());
-
-		} else {
-			throw new Exception("Partner not found");
+		user.setUserName(user.getName());
+		if (user.getUserRole() != null && user.getUserRole().equalsIgnoreCase(ROLE_ADMIN)) {
+			teamId=TEAM_ADMIN;
 		}
+		user.setTeamId(teamId);
+		if (user.getUserRole() == null)
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userRole is missing");
+		/*
+		 * Team team = teamRepository.load(teamId, "details"); if (team == null) throw
+		 * new ResponseStatusException(HttpStatus.BAD_REQUEST, "Team is missing");
+		 * System.out.println("Team from DB : " + team.getTeamId());
+		 */
+		Group group = groupRepository.load(groupId, "details");
+		if (group == null)
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Group is missing");
+		System.out.println("Group from DB : " + group.getGroupId());
+		if (group.getUserLimit() == null)
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Limit on Group " + groupId + " is missing");
+		System.out.println("getUserLimit in GroupTable from DB : " + group.getUserLimit());
+		int groupUserLimit = Integer.parseInt(group.getUserLimit());
+		userLimitDB = groupUserLimit;
+		List groupUsers = userRepository.queryOnGSI("groupId-index", "groupId", groupId);
+		userCount = groupUsers.size();
+		logger.info("Current userCount in DB for Group :" + userCount + "(groupId :" + groupId + ")");
+		if (userCount >= userLimitDB) {
+			// throw new Exception("Maximum user count reached");
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+					"Users Reached Maximun limit : " + userLimitDB);
+		}
+		user.setGroupId(group.getGroupId());
+		Partner partner = partnerRepository.queryOnsk(group.getGroupId()).get(0);
+		user.setPartnerId(partner.getPartnerId());
+		user.setUserLimit(String.valueOf(userLimitDB));
 
-		return new ApiResponse(HttpStatus.OK, SUCCESS, savedUser.toUserDTO());
+		if (user.getUserRole() != null && user.getUserRole().equalsIgnoreCase(ROLE_ADMIN)) {
+			user.setPassword("admin");// default password
+		} else {
+			String randompwd = this.getRandomPassword(4);
+			user.setPassword(randompwd);
+		}
+		User savedUser = userRepository.save(user);
+		//teamRepository.addUserToTeam(team.getTeamId(), savedUser);
+		emailService.sendCredentailsMessage(user.getEmail(), StringUtils.capitalize(user.getName()), user.getUserId(),
+				user.getPassword());
+		return new ApiResponse(HttpStatus.OK, SUCCESS, savedUser);
+
 	}
 
+//	@CrossOrigin
+//	@PostMapping("/user") // deprecated
+//
+//	public ApiResponse createUserUnderPartner(@RequestBody User user) throws Exception {
+//
+//		user.setUserName(user.getName());
+//		user.setUserId(user.getEmail());
+//		user.setTeamId("teamId5"); // Default team Id
+//		User savedUser = null;
+//		String partnerId = null;
+//		partnerId = tokenUtil.getPartner();
+//		System.out.println("partnerId for User : " + partnerId);
+//		List<Partner> partnerList = partnerRepository.get(partnerId);
+//		if (partnerList != null && partnerList.size() > 0) {
+//			Partner partner = partnerList.get(0);
+//			user.setPartnerId(partner.getPartnerId());
+//			user.setUserRole(ROLE_USER);
+//
+//			User existingUser = userRepository.load(user.getUserId());
+//			if (existingUser != null) {
+//				throw new Exception("User already present with id : " + user.getUserId());
+//			}
+//
+//			savedUser = userRepository.save(user);
+//			emailService.sendCredentailsMessage(user.getEmail(), StringUtils.capitalize(user.getName()),
+//					user.getUserId(), user.getPassword());
+//
+//		} else {
+//			throw new Exception("Partner not found");
+//		}
+//
+//		return new ApiResponse(HttpStatus.OK, SUCCESS, savedUser.toUserDTO());
+//	}
+
 	@CrossOrigin
-	@GetMapping("/user")
-	public ApiResponse getAll(@RequestParam(required = false, name = "teamId") String teamId) {
+	@GetMapping("/user") // Get Users for a given Team
+	public ApiResponse getAll(@RequestParam(required = false, name = "teamId") String teamId,
+			@RequestParam(required = false, name = "groupId") String groupId) {
 
 		List<User> list = null;
 		String partnerId = null;
-		if (teamId == null || teamId.equalsIgnoreCase("")) {
-			partnerId = tokenUtil.getPartner();
-			System.out.println("partnerId : " + partnerId);
-			list = userRepository.queryOnGSI("partnerId-index", "partnerId", partnerId);
-		} else
+		if (teamId != null && !teamId.equalsIgnoreCase("")) {
 			list = userRepository.queryOnGSI("teamId-index", "teamId", teamId);
+		} else if (groupId != null && !groupId.equalsIgnoreCase("")) {
+			list = userRepository.queryOnGSI("groupId-index", "groupId", groupId);
+		} else
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "RequestParam teamId/groupId required");
 
 		return new ApiResponse(HttpStatus.OK, SUCCESS, list);
 	}
+
+//	@CrossOrigin
+//	@GetMapping("/user")  //Get Users for a given Team
+//	public ApiResponse getAll(@RequestParam(required = false, name = "teamId",) String teamId,) {
+//
+//		List<User> list = null;
+//		String partnerId = null;
+//		if (teamId == null || teamId.equalsIgnoreCase("")) {
+//			partnerId = tokenUtil.getPartner();
+//			System.out.println("partnerId : " + partnerId);
+//			list = userRepository.queryOnGSI("partnerId-index", "partnerId", partnerId);
+//		} else
+//			list = userRepository.queryOnGSI("teamId-index", "teamId", teamId);
+//		return new ApiResponse(HttpStatus.OK, SUCCESS, list);
+//	}
+
+//	@CrossOrigin
+//	@GetMapping("/user")  //Get Users for a given Group
+//	public ApiResponse getUsersInGroup(@RequestParam(required = false, name = "groupId") String groupId) {
+//
+//		List<User> list = null;
+//		String partnerId = null;
+//		if (groupId == null || groupId.equalsIgnoreCase("")) {
+//			partnerId = tokenUtil.getPartner();
+//			System.out.println("partnerId : " + partnerId);
+//			list = userRepository.queryOnGSI("groupId-index", "groupId", groupId);
+//		} else
+//			list = userRepository.queryOnGSI("groupId-index", "groupId", groupId);
+//		return new ApiResponse(HttpStatus.OK, SUCCESS, list);
+//	}
 
 	@CrossOrigin
 	@GetMapping("/user/{userId}")

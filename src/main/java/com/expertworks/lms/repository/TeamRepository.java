@@ -81,8 +81,8 @@ public class TeamRepository {
 
 	}
 
-	public Team load(String teamId) {
-		Team team = dynamoDBMapper.load(Team.class, teamId);
+	public Team load(String teamId,String sk) {
+		Team team = dynamoDBMapper.load(Team.class,teamId,sk);
 		return team;
 	}
 

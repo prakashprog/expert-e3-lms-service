@@ -112,9 +112,12 @@ public class TeamCoursesController {
 			System.out.println("TeamId : " + teamIdinToken + " , CourseId : " + teamCourse.getCourseId() + ",total:"
 					+ teamCourses.size());
 
-			List<Courses> list = coursesRepository.getMetaDetailsCourses(teamCourse.getCourseId());
-			if (list != null && list.size() > 0) {
-				CoursesDTO coursesDTO = list.get(0).toCourseDTO();
+			//List<Courses> list = coursesRepository.getMetaDetailsCourses(teamCourse.getCourseId());
+			Courses course = coursesRepository.getCoursesMetaDetails(teamCourse.getCourseId());
+			
+			//if (list != null && list.size() > 0) {
+			if(course != null) {
+				CoursesDTO coursesDTO = course.toCourseDTO();
 				coursesDTOList.add(coursesDTO);
 			}
 		}

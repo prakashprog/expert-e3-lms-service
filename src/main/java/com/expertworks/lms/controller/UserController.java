@@ -28,6 +28,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.view.RedirectView;
 
 import com.expertworks.lms.http.ApiResponse;
+import com.expertworks.lms.http.EmailDTO;
 import com.expertworks.lms.http.TransferDTO;
 import com.expertworks.lms.http.UserDTO;
 import com.expertworks.lms.model.Group;
@@ -72,7 +73,7 @@ public class UserController {
 	private TeamRepository teamRepository;
 
 	@Autowired
-	private PartnerRepository partnerRepository;  
+	private PartnerRepository partnerRepository;
 
 	@Autowired
 	TokenUtil tokenUtil;
@@ -231,24 +232,31 @@ public class UserController {
 		int userCount;
 		user.setUserId(user.getEmail());
 		user.setUserName(user.getName());
-		if (user.getUserRole() != null && user.getUserRole().equalsIgnoreCase(ROLE_ADMIN)) {
-			teamId=TEAM_ADMIN;
-		}
 		user.setTeamId(teamId);
 		if (user.getUserRole() == null)
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userRole is missing");
-		/*
-		 * Team team = teamRepository.load(teamId, "details"); if (team == null) throw
-		 * new ResponseStatusException(HttpStatus.BAD_REQUEST, "Team is missing");
-		 * System.out.println("Team from DB : " + team.getTeamId());
-		 */
+		if (user.getUserRole() != null && user.getUserRole().equalsIgnoreCase(ROLE_ADMIN)) {
+			Team team = new Team();
+			team.setSk("details");
+			team.setGroupId(groupId);
+			team.setName(TEAM_ADMIN); 
+			
+			Team savedTeam = teamRepository.save(team);
+			teamId = savedTeam.getTeamId();
+		}
+		if (teamId != null) {
+			Team team = teamRepository.load(teamId, "details");
+			if (team == null)
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Team is missing");
+			System.out.println("Team from DB : " + team.getTeamId());
+		}
+
 		Group group = groupRepository.load(groupId, "details");
 		if (group == null)
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Group is missing");
 		System.out.println("Group from DB : " + group.getGroupId());
 		if (group.getUserLimit() == null)
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-					"Limit on Group " + groupId + " is missing");
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Limit on Group " + groupId + " is missing");
 		System.out.println("getUserLimit in GroupTable from DB : " + group.getUserLimit());
 		int groupUserLimit = Integer.parseInt(group.getUserLimit());
 		userLimitDB = groupUserLimit;
@@ -257,8 +265,7 @@ public class UserController {
 		logger.info("Current userCount in DB for Group :" + userCount + "(groupId :" + groupId + ")");
 		if (userCount >= userLimitDB) {
 			// throw new Exception("Maximum user count reached");
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-					"Users Reached Maximun limit : " + userLimitDB);
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Users Reached Maximun limit : " + userLimitDB);
 		}
 		user.setGroupId(group.getGroupId());
 		Partner partner = partnerRepository.queryOnsk(group.getGroupId()).get(0);
@@ -272,9 +279,9 @@ public class UserController {
 			user.setPassword(randompwd);
 		}
 		User savedUser = userRepository.save(user);
-		//teamRepository.addUserToTeam(team.getTeamId(), savedUser);
-		emailService.sendCredentailsMessage(user.getEmail(), StringUtils.capitalize(user.getName()), user.getUserId(),
-				user.getPassword());
+		// teamRepository.addUserToTeam(team.getTeamId(), savedUser);
+		EmailDTO email = new EmailDTO(user.getEmail(), StringUtils.capitalize(user.getName()),user.getUserId(),user.getPassword());
+		emailService.sendCredentailsMessagev1(email);
 		return new ApiResponse(HttpStatus.OK, SUCCESS, savedUser);
 
 	}
@@ -429,8 +436,14 @@ public class UserController {
 		loadedUser.setPassword(randompwd);
 		System.out.println("New Pwd: " + randompwd);
 		user = userRepository.update(userId, loadedUser);
-		emailService.sendResetCredentailsMail(loadedUser.getEmail(), StringUtils.capitalize(user.getName()),
-				loadedUser.getUserId(), loadedUser.getPassword());
+
+		EmailDTO email = new EmailDTO();
+		email.setTo(loadedUser.getEmail());
+		email.setLoginId(loadedUser.getUserId());
+		email.setUsername(StringUtils.capitalize(user.getName()));
+		email.setPassword(loadedUser.getPassword());
+		emailService.sendResetCredentailsEMailv1(email);
+
 		return new ApiResponse(HttpStatus.OK, SUCCESS, user);
 	}
 

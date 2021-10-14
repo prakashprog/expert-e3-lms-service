@@ -18,11 +18,15 @@ import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
 import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedScanList;
 import com.amazonaws.services.dynamodbv2.datamodeling.QueryResultPage;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
+import com.amazonaws.services.dynamodbv2.model.Condition;
 import com.amazonaws.services.dynamodbv2.model.ExpectedAttributeValue;
 import com.expertworks.lms.model.Group;
 import com.expertworks.lms.model.Partner;
+import com.expertworks.lms.model.Team;
 import com.expertworks.lms.model.Partner;
 import com.expertworks.lms.model.TeamCourses;
+import com.expertworks.lms.model.UserDetail;
 
 @Repository
 public class PartnerRepository {
@@ -58,16 +62,30 @@ public class PartnerRepository {
 		DynamoDBQueryExpression<Partner> queryExpression = new DynamoDBQueryExpression<Partner>()
 				.withIndexName("sk-index")
 				.withKeyConditionExpression("sk= :val1").withExpressionAttributeValues(eav)
-				.withConsistentRead(false).withLimit(2);
+				.withConsistentRead(false);
 
 		QueryResultPage<Partner> scanPage = dynamoDBMapper.queryPage(Partner.class, queryExpression);
-		
 		List<Partner> list=  scanPage.getResults();
-		
 		System.out.println("Partner List Size===========" + list.size());
-		
 		return list;
 	}
+    
+
+	public List<Partner> queryOnGSI(String indexName, String attributeName, String attributeValue) {
+
+		Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
+		eav.put(":val1", new AttributeValue().withS(attributeValue));
+
+		DynamoDBQueryExpression<Partner> queryExpression = new DynamoDBQueryExpression<Partner>().withIndexName(indexName)
+				.withKeyConditionExpression(attributeName + "= :val1").withExpressionAttributeValues(eav)
+				.withConsistentRead(false);// .withLimit(2);
+
+		QueryResultPage<Partner> scanPage = dynamoDBMapper.queryPage(Partner.class, queryExpression);
+		List<Partner> list = scanPage.getResults();
+		return list;
+	}
+    
+ 
     
     
     public List<Partner> get(String partnerId) {

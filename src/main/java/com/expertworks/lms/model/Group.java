@@ -31,6 +31,9 @@ public class Group implements Comparable<Group> {
 
 	@DynamoDBAttribute
 	private String name;
+	
+	@DynamoDBAttribute
+	private String email;
 
 	@DynamoDBAttribute
 	private String teamId;
@@ -56,6 +59,7 @@ public class Group implements Comparable<Group> {
 		groupDTO.setTeamId(this.teamId);
 		groupDTO.setSk(this.sk);
 		groupDTO.setName(this.name);
+		groupDTO.setEmail(this.email);
 		groupDTO.setRegion(this.region);
 		groupDTO.setUserLimit(this.userLimit);
 		
@@ -144,6 +148,14 @@ public class Group implements Comparable<Group> {
 
 	public void setUserLimit(String userLimit) {
 		this.userLimit = userLimit;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
 	

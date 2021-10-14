@@ -1,5 +1,7 @@
 package com.expertworks.lms.controller;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +21,6 @@ import com.expertworks.lms.http.PartnerDTO;
 import com.expertworks.lms.model.Group;
 import com.expertworks.lms.model.Partner;
 import com.expertworks.lms.repository.PartnerRepository;
-import com.expertworks.lms.util.TokenUtil;
 
 @RestController
 @Component
@@ -50,13 +51,31 @@ public class PartnerController {
 		return new ApiResponse(HttpStatus.OK, SUCCESS, savedPartner);
 	}
 
-	@CrossOrigin
+	/*@CrossOrigin
 	@GetMapping("/partner")
 	public ApiResponse getAll() {
 
 		List<Partner> list = partnerRepository.getAll();
 		return new ApiResponse(HttpStatus.OK, SUCCESS, list);
+	}*/
+	
+	
+	@CrossOrigin
+	@GetMapping("/partner")
+	public ApiResponse getAll() {
+
+		List<Partner> list = partnerRepository.queryOnGSI("sk-index", "sk", "details");
+		
+		 Collections.sort(list, new Comparator<Partner>() {
+	            public int compare(Partner p1, Partner p2) {
+	                // notice the cast to (Integer) to invoke compareTo
+	                return (p2.getCreatedDate()).compareTo(p1.getCreatedDate());
+	            }
+	        });
+		
+		return new ApiResponse(HttpStatus.OK, SUCCESS, list);
 	}
+		
 
 	@CrossOrigin
 	@GetMapping("/partner/{partnerId}")

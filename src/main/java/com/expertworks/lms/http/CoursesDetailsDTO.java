@@ -6,7 +6,7 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.StandardToStringStyle;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
+import com.expertworks.lms.model.Currency;
 
 
 public class CoursesDetailsDTO  {
@@ -21,7 +21,13 @@ public class CoursesDetailsDTO  {
 	private String subtitle;
 	private String description;
 	private String leveldesc;
+
+	private String hours;
+	private String rating;
+	private String reviews;
+	
 	private List<String> includes;
+	private List<Currency> currency;
 	
 	List<CoursesDTO> sections;
 
@@ -129,7 +135,40 @@ public class CoursesDetailsDTO  {
 		    ToStringBuilder builder = new ReflectionToStringBuilder(this, style);
 		    return builder.toString();
 		}
-	
+
+	public String getHours() {
+		return hours;
+	}
+
+	public void setHours(String hours) {
+		this.hours = hours;
+	}
+
+	public String getRating() {
+		return rating;
+	}
+
+	public void setRating(String rating) {
+		this.rating = rating;
+	}
+
+	public String getReviews() {
+		return reviews;
+	}
+
+	public void setReviews(String reviews) {
+		this.reviews = reviews;
+	}
+
+	public List<Currency> getCurrency() {
+		return currency;
+	}
+
+	public void setCurrency(List<Currency> currency) {
+		this.currency = currency;
+	}
+
+
 
 
 	

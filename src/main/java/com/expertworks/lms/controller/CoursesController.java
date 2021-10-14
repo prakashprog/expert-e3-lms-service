@@ -28,6 +28,7 @@ import com.expertworks.lms.http.CoursesDetailsDTO;
 import com.expertworks.lms.http.ResourceLinkDTO;
 import com.expertworks.lms.http.VideoLinkDTO;
 import com.expertworks.lms.model.Courses;
+import com.expertworks.lms.model.Currency;
 import com.expertworks.lms.model.ResourceLink;
 import com.expertworks.lms.model.UserDetail;
 import com.expertworks.lms.repository.CoursesRepository;
@@ -93,7 +94,7 @@ public class CoursesController {
 	}
 
 	
-	@LogExecutionTime
+	//@LogExecutionTime
 	@GetMapping("/courses/{courseId}")
 	@CrossOrigin
 	public ApiResponse getCourses(@PathVariable("courseId") String courseId) {
@@ -139,7 +140,7 @@ public class CoursesController {
 		return new ApiResponse(HttpStatus.OK, SUCCESS, courseDTOList);
 	}
 
-	@LogExecutionTime
+	//@LogExecutionTime
 	@GetMapping("/tmp/courses/{courseId}")
 	@CrossOrigin
 	public ApiResponse gettmpCourses(@PathVariable("courseId") String courseId) {
@@ -184,10 +185,13 @@ public class CoursesController {
 		System.out.println("teamId : " + teamId);
 		System.out.println("sub : " + userId);
 
-		List<Courses> coursesMetaList = coursesRepository.getMetaDetailsCourses(courseId);
-		Courses courselevelData = coursesMetaList.get(0);
-		String s3folder = coursesMetaList.get(0).getS3folder();
+		//List<Courses> coursesMetaList = coursesRepository.getCoursesMetaDetails(courseId);
+		//Courses courselevelData = coursesMetaList.get(0);
+		Courses courselevelData = coursesRepository.getCoursesMetaDetails(courseId);
+		
+		String s3folder = courselevelData.getS3folder();
 		System.out.println("s3folder : "  + s3folder);
+		
 		// get all rows start with S#
 		List<Courses> secList = coursesRepository.getCourseSections(courseId);
 		List<CoursesDTO> secDTOList = new ArrayList();
@@ -250,6 +254,9 @@ public class CoursesController {
 		coursesDetailsDTO.setLeveldesc(courselevelData.getLeveldesc());
 		coursesDetailsDTO.setIncludes(courselevelData.getIncludes());
 		coursesDetailsDTO.setOrder(courselevelData.getOrder());
+		coursesDetailsDTO.setHours(courselevelData.getHours());
+		coursesDetailsDTO.setRating(courselevelData.getRating());
+		coursesDetailsDTO.setReviews(courselevelData.getReviews());
 
 		return new ApiResponse(HttpStatus.OK, SUCCESS, coursesDetailsDTO);
 	}
@@ -285,14 +292,15 @@ public class CoursesController {
 		List<Courses> sectionList = coursesRepository.getCourseSections(courseId);
 		List<CoursesDTO> courseDTOList = new ArrayList();
 
-		for (Courses item : sectionList) {
-			CoursesDTO courseDTO = item.toCourseDTO();
+		for (Courses section : sectionList) {
+			CoursesDTO courseDTO = section.toCourseDTO();
 			courseDTOList.add(courseDTO);
 		}
 
 		Collections.sort(courseDTOList);
-		List<Courses> coursesMetaList = coursesRepository.getMetaDetailsCourses(courseId);
-		String s3folder = coursesMetaList.get(0).getS3folder();
+		//List<Courses> coursesMetaList = coursesRepository.getCoursesMetaDetails(courseId);
+		Courses courselevel = coursesRepository.getCoursesMetaDetails(courseId);
+		String s3folder = courselevel.getS3folder();
 		System.out.println("s3folder : "  + s3folder);
 		
 		for (CoursesDTO section : courseDTOList) {
@@ -322,9 +330,7 @@ public class CoursesController {
 					videoLink.setUrl(null);
 
 		}
-
-		
-		Courses courselevel = coursesMetaList.get(0);
+	
 		System.out.println("getS3folder  : " + courselevel.getS3folder());
 		CoursesDetailsDTO coursesDetailsDTO = new CoursesDetailsDTO();
 		coursesDetailsDTO.setSections(courseDTOList);
@@ -335,6 +341,16 @@ public class CoursesController {
 		coursesDetailsDTO.setLeveldesc(courselevel.getLeveldesc());
 		coursesDetailsDTO.setIncludes(courselevel.getIncludes());
 		coursesDetailsDTO.setOrder(courselevel.getOrder());
+		
+		coursesDetailsDTO.setHours(courselevel.getHours());
+		coursesDetailsDTO.setRating(courselevel.getRating());
+		coursesDetailsDTO.setReviews(courselevel.getReviews());
+		
+		coursesDetailsDTO.setCurrency(courselevel.getCurrency());
+		
+		List<Currency> list = courselevel.getCurrency();
+		//list.stream().forEach(c -> System.out.println("Currency :"+c.getCountry()));
+		
 
 		return new ApiResponse(HttpStatus.OK, SUCCESS, coursesDetailsDTO);
 	}
@@ -343,8 +359,8 @@ public class CoursesController {
 	@GetMapping("/courses/meta/{courseId}")
 	public ApiResponse getMetaDeatils(@PathVariable("courseId") String courseId) {
 
-		List<Courses> list = coursesRepository.getMetaDetailsCourses(courseId);
-		return new ApiResponse(HttpStatus.OK, SUCCESS, list);
+		Courses course = coursesRepository.getCoursesMetaDetails(courseId);
+		return new ApiResponse(HttpStatus.OK, SUCCESS, course);
 	}
 
 	@CrossOrigin

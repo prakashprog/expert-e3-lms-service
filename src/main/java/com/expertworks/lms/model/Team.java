@@ -46,6 +46,17 @@ public class Team implements Comparable<Team> {
 	private String groupId;
 	
 	
+	public Team(String groupId,String name,String sk)
+	{
+		this.name = name;
+		this.groupId = groupId;
+		this.sk = sk;
+	}
+	
+	public Team()
+	{
+		
+	}
 
 	public int compareTo(Team partner) {
 		return sk.compareTo(partner.sk);

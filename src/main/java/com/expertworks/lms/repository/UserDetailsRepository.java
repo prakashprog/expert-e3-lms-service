@@ -49,24 +49,17 @@ public class UserDetailsRepository {
     public List<UserDetail> get(String userId,String sk) {
     	
     	System.out.println("hashkey : " + userId + "sk BEGINS_WITH : " + sk );  
-    	
     	UserDetail userDetail = new UserDetail();
     	userDetail.setUserId(userId);
-    
-    	Condition rangeKeyCondition = new Condition()
+       	Condition rangeKeyCondition = new Condition()
 		        .withComparisonOperator(ComparisonOperator.BEGINS_WITH.toString())
 		        .withAttributeValueList(new AttributeValue().withS(sk));
-		
 		DynamoDBQueryExpression<UserDetail> queryExpression = new DynamoDBQueryExpression<UserDetail>()
 		        .withHashKeyValues(userDetail)
 		        .withRangeKeyCondition("sk", rangeKeyCondition);
-		
 		List<UserDetail> list = dynamoDBMapper.query(UserDetail.class, queryExpression);
-		
 		return list;
-		
-
-    }
+	}
     
 
     public UserDetail save(UserDetail userDetail) {

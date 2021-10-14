@@ -28,6 +28,7 @@ public class CoursesDTO  implements Comparable<CoursesDTO> {
 	private String s3folder;
 	private boolean completed;
 	private boolean description;
+	private String price;
 	
 	private String type;
 
@@ -263,6 +264,16 @@ public class CoursesDTO  implements Comparable<CoursesDTO> {
 		    ToStringBuilder builder = new ReflectionToStringBuilder(this, style);
 		    return builder.toString();
 		}
+
+
+	public String getPrice() {
+		return price;
+	}
+
+
+	public void setPrice(String price) {
+		this.price = price;
+	}
 
 
 	

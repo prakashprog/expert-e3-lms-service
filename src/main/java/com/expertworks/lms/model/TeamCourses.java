@@ -24,26 +24,26 @@ public class TeamCourses {
 
 	@DynamoDBAttribute
 	private String createDate;
-	
+
 	@DynamoDBAttribute
 	private String title;
-	
+
 	@DynamoDBAttribute
 	private String subtitle;
-	
-	  @DynamoDBAttribute
-	   	private String img;
 
-	 @JsonIgnore
+	@DynamoDBAttribute
+	private String img;
+
+	@JsonIgnore
 	@DynamoDBAttribute
 	private List<VideoLink> videoLinks;
-	
+
 	@DynamoDBAttribute
 	private int totalvidoes;
 
 	@DynamoDBAttribute
 	private String s3folder;
-	
+
 	@DynamoDBAttribute
 	private String preferences;
 
@@ -108,7 +108,6 @@ public class TeamCourses {
 		this.title = title;
 	}
 
-
 	/**
 	 * @return the s3folder
 	 */
@@ -136,7 +135,6 @@ public class TeamCourses {
 	public void setPreferences(String preferences) {
 		this.preferences = preferences;
 	}
-
 
 	/**
 	 * @return the totalvidoes
@@ -166,10 +164,6 @@ public class TeamCourses {
 		this.videoLinks = videoLinks;
 	}
 
-
-	
-	
-
 	/**
 	 * @return the subtitle
 	 */
@@ -197,6 +191,5 @@ public class TeamCourses {
 	public void setImg(String img) {
 		this.img = img;
 	}
-
 
 }

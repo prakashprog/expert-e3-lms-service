@@ -22,6 +22,7 @@ import com.amazonaws.services.dynamodbv2.model.ExpectedAttributeValue;
 import com.amazonaws.services.dynamodbv2.model.ScanRequest;
 import com.amazonaws.services.dynamodbv2.model.ScanResult;
 import com.expertworks.lms.model.Courses;
+import com.expertworks.lms.model.Group;
 import com.expertworks.lms.model.ResourceLink;
 
 @Repository
@@ -92,6 +93,16 @@ public class CoursesRepository {
 		
 		return list;
 	}
+	
+	
+	//pk = courseId & sortkey =  C#cid
+	public Courses getCoursesMetaDetails(String courseId) {
+		Courses Courses = dynamoDBMapper.load(Courses.class,courseId,"C#"+courseId);
+		return Courses;
+	}
+	
+	
+	
 	
 	
 	//pk = courseId & sortkey = Beginswith C#

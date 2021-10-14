@@ -15,6 +15,7 @@ public class GroupDTO implements Comparable<GroupDTO> {
 	private String sk;
 	private Date createdDate;
 	private String name;
+	private String email;
 	private String teamId;
 	private String img;
 	private String userLimit;
@@ -99,6 +100,14 @@ public class GroupDTO implements Comparable<GroupDTO> {
 
 	public void setUserLimit(String userLimit) {
 		this.userLimit = userLimit;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
 	

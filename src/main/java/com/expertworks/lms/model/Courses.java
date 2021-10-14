@@ -67,6 +67,19 @@ public class Courses implements Comparable<Courses> {
 	@DynamoDBAttribute
 	private String price;
 	
+	@DynamoDBAttribute
+	private List<Currency> currency;
+	
+	@DynamoDBAttribute
+	private String hours;
+
+	@DynamoDBAttribute
+	private String rating;
+	
+	@DynamoDBAttribute
+	private String reviews;
+		
+	
 	public int compareTo(Courses courses) {
 		return sk.compareTo(courses.sk);
 
@@ -169,6 +182,7 @@ public class Courses implements Comparable<Courses> {
 		coursesDTO.setSubtitle(this.subtitle);
 		coursesDTO.setImg(this.img);
 		coursesDTO.setCreateDate(this.createDate);
+		coursesDTO.setPrice(this.price);
 		List<VideoLinkDTO> videoLinkDTOList = new ArrayList<VideoLinkDTO>();
 		if (this.getVideoLinks() != null)
 			for (VideoLink videoLink : this.getVideoLinks()) {
@@ -284,6 +298,38 @@ public class Courses implements Comparable<Courses> {
 
 	public void setPrice(String price) {
 		this.price = price;
+	}
+
+	public String getHours() {
+		return hours;
+	}
+
+	public void setHours(String hours) {
+		this.hours = hours;
+	}
+
+	public String getRating() {
+		return rating;
+	}
+
+	public void setRating(String rating) {
+		this.rating = rating;
+	}
+
+	public String getReviews() {
+		return reviews;
+	}
+
+	public void setReviews(String reviews) {
+		this.reviews = reviews;
+	}
+
+	public List<Currency> getCurrency() {
+		return currency;
+	}
+
+	public void setCurrency(List<Currency> currency) {
+		this.currency = currency;
 	}
 
 }

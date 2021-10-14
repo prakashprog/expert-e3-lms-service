@@ -1,13 +1,19 @@
 package com.expertworks.lms.service;
 
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean;
+import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
@@ -19,7 +25,11 @@ import com.amazonaws.services.simpleemail.model.Content;
 import com.amazonaws.services.simpleemail.model.Destination;
 import com.amazonaws.services.simpleemail.model.SendEmailRequest;
 import com.amazonaws.services.simpleemail.model.SendTemplatedEmailRequest;
-import com.expertworks.lms.controller.UserController;
+import com.expertworks.lms.http.EmailDTO;
+import com.expertworks.lms.util.CloudTemplateLoader;
+
+import freemarker.template.Configuration;
+import freemarker.template.Template;
 
 @org.springframework.stereotype.Service
 public class EmailService {
@@ -44,6 +54,9 @@ public class EmailService {
 
 	@Value("${aws.ses.templatename}")
 	private String templateName;
+	
+	@Value("${aws.ses.templateroot}")
+	private String templateRootURL;
 
 	@Bean
 	public AmazonSimpleEmailService getAmazonSimpleEmailService() {
@@ -52,9 +65,39 @@ public class EmailService {
 				.standard().withCredentials(new AWSStaticCredentialsProvider(credentials)).withRegion(region).build();
 		return client;
 	}
+	
+//	 @Bean   
+//     public FreeMarkerConfigurationFactoryBean factoryBean() throws Exception {  
+//         FreeMarkerConfigurationFactoryBean bean=new FreeMarkerConfigurationFactoryBean();  
+//          bean.setTemplateLoaderPath("classpath:/templates");  
+//           return bean;  
+//     }  
+//	 
+//	 @Autowired
+//	 Configuration fmConfiguration;
 
 	@Autowired
 	AmazonSimpleEmailService client;
+	
+	@Bean   
+	public FreeMarkerConfigurationFactoryBean getFreeMarkerConfig() throws Exception
+	{
+	 FreeMarkerConfigurationFactoryBean bean=new FreeMarkerConfigurationFactoryBean();  
+     Properties properties = new Properties();
+     properties.setProperty("localized_lookup", "false");
+     bean.setFreemarkerSettings(properties);
+     bean.setPreTemplateLoaders(new CloudTemplateLoader(new URL(templateRootURL)));
+     bean.setDefaultEncoding("UTF-8");
+     return bean;
+    // Configuration fmConfiguration = bean.createConfiguration();
+     
+	}
+	
+
+	
+	 @Autowired
+	 FreeMarkerConfigurationFactoryBean freeMarkerConfigurationFactoryBean;
+	 
 
 	public String sendEmail(String[] to, String templateDataJson) {
 
@@ -123,6 +166,8 @@ public class EmailService {
 
 	}
 	
+	
+	
 	public void sendEmailVerification(String to, String username,String userId,String verificationKey) {
 
 		final String FROM = "Sales@expert-works.com";
@@ -174,6 +219,70 @@ public class EmailService {
 		client.sendEmail(request);
 
 	}
+	
+	
+	
+	
+	
+	public void sendResetCredentailsEMailv1(EmailDTO email) throws Exception{
 
+		final String FROM = "Sales@expert-works.com";
+		//final String TO = "sskprakash@gmail.com";
+		final String SUBJECT = "Password Reset for Expert-works";
+		
+		Map<String, Object> model = new HashMap<>();
+		model.put("user", email.getUsername());
+		model.put("userid", email.getLoginId());
+		model.put("password", email.getPassword());
+				
+		Configuration fmConfiguration = freeMarkerConfigurationFactoryBean.createConfiguration();
+		 Template template = fmConfiguration.getTemplate("email_template/password_reset.html"); 
+		 String HTMLBODY = FreeMarkerTemplateUtils.processTemplateIntoString(template, model);
+		 
+		 System.out.println("======================html===========================");
+		 //System.out.println(HTMLBODY);
+		
+		
+		final String TEXTBODY = "This email was sent from <a href='https://www.expert-works.com'>\"";
+
+		SendEmailRequest request = new SendEmailRequest().withDestination(new Destination().withToAddresses(email.getTo()))
+				.withMessage(new com.amazonaws.services.simpleemail.model.Message()
+						.withBody(new Body().withHtml(new Content().withCharset("UTF-8").withData(HTMLBODY))
+								.withText(new Content().withCharset("UTF-8").withData(TEXTBODY)))
+						.withSubject(new Content().withCharset("UTF-8").withData(SUBJECT)))
+				.withSource(FROM);
+		client.sendEmail(request);
+
+		
+		 
+	}
+	
+	
+	public void sendCredentailsMessagev1(EmailDTO email) throws Exception{
+
+		final String FROM = "Sales@expert-works.com";
+		final String SUBJECT = "Welcome to Expert Works.4";
+		Map<String, Object> model = new HashMap<>();
+		model.put("user", email.getUsername());
+		model.put("userid", email.getLoginId());
+		model.put("password", email.getPassword());
+		Configuration fmConfiguration = freeMarkerConfigurationFactoryBean.createConfiguration();
+		Template template = fmConfiguration.getTemplate("email_template/admin_email.html"); 
+		 String HTMLBODY = FreeMarkerTemplateUtils.processTemplateIntoString(template, model);	
+		
+		
+		final String TEXTBODY = "This email was sent from <a href='https://www.expert-works.com'>\"";
+		logger.info("Sending mail to :"+email.getTo() );
+		SendEmailRequest request = new SendEmailRequest().withDestination(new Destination().withToAddresses(email.getTo()))
+				.withMessage(new com.amazonaws.services.simpleemail.model.Message()
+						.withBody(new Body().withHtml(new Content().withCharset("UTF-8").withData(HTMLBODY))
+								.withText(new Content().withCharset("UTF-8").withData(TEXTBODY)))
+						.withSubject(new Content().withCharset("UTF-8").withData(SUBJECT)))
+				.withSource(FROM);
+		client.sendEmail(request);
+
+	}
+	
+	
 
 }

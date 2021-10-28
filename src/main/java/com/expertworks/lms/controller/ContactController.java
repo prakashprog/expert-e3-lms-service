@@ -2,10 +2,11 @@ package com.expertworks.lms.controller;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,11 +15,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.expertworks.lms.http.ApiResponse;
+import com.expertworks.lms.http.EmailDTO;
 import com.expertworks.lms.model.Contact;
 import com.expertworks.lms.repository.ContactRepository;
 import com.expertworks.lms.service.EmailService;
@@ -43,7 +43,7 @@ public class ContactController {
 
 	@CrossOrigin
 	@PostMapping("public/contactus")
-	public ApiResponse save(@RequestBody Contact contact) {
+	public ApiResponse save(@RequestBody @Valid  Contact contact) throws Exception {
 
 		System.out.println("Request Recieved in contactus");
 		String[] to = { contact.getEmail() };
@@ -51,13 +51,26 @@ public class ContactController {
 		String name = contact.getFirstname()!=null?contact.getFirstname():"";
 		String lastname = contact.getLastname()!=null?contact.getLastname(): "";	
 		
-		System.out.println("lastname: " + lastname);
+		
 		obj.put("name", name +" "+ lastname);
 		obj.put("ending", "Thanks");
 		//String templateDataJson = "{ \"name\":\"Jack\", \"eom\": \"Tiger\"}";
-		emailService.sendEmail(to, obj.toJSONString());
+		//emailService.sendEmail(to, obj.toJSONString());
 		
-		return new ApiResponse(HttpStatus.OK, SUCCESS, contactRepository.save(contact));
+		Contact saved= contactRepository.save(contact);
+		
+		EmailDTO email = new EmailDTO();
+		email.to= contact.getEmail();
+		email.username=	name;
+		
+		emailService.sendContactUsEMailv1(email);
+		System.out.println("saved : " + saved.toString());
+		
+		//Send email to sales Team as well
+	
+		emailService.sendSalesEMail(saved.toString());
+		
+		return new ApiResponse(HttpStatus.OK, SUCCESS, saved);
 	}
 
 	@CrossOrigin

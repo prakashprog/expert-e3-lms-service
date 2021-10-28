@@ -196,6 +196,36 @@ public class EmailService {
 
 	}
 	
+	//public void sendEmailVerificationv1(String to, String username,String userId,String verificationKey) {
+	public void sendEmailVerificationv1(EmailDTO email) throws Exception{	
+		
+
+		final String FROM = "Sales@expert-works.com";
+		final String SUBJECT = "Welcome to Expert Works , please verify your email!";
+		Map<String, Object> model = new HashMap<>();
+		String verificationKey = email.getVerificationKey();
+		String userId = email.getLoginId();
+		String verificationUrl= "https://api.expert-works.com/public/signup/"+userId+"/"+verificationKey;
+		
+		model.put("user", email.getUsername());
+		model.put("url", verificationUrl);
+		
+		Configuration fmConfiguration = freeMarkerConfigurationFactoryBean.createConfiguration();
+		Template template = fmConfiguration.getTemplate("email_template/verify_email.html"); 
+		String HTMLBODY = FreeMarkerTemplateUtils.processTemplateIntoString(template, model);	
+		
+		final String TEXTBODY = "This email was sent from <a href='https://www.expert-works.com'>\"";
+		SendEmailRequest request = new SendEmailRequest().withDestination(new Destination().withToAddresses(email.getTo()))
+				.withMessage(new com.amazonaws.services.simpleemail.model.Message()
+						.withBody(new Body().withHtml(new Content().withCharset("UTF-8").withData(HTMLBODY))
+								.withText(new Content().withCharset("UTF-8").withData(TEXTBODY)))
+						.withSubject(new Content().withCharset("UTF-8").withData(SUBJECT)))
+				.withSource(FROM);
+		client.sendEmail(request);
+
+	}
+	
+	
 	public void sendResetCredentailsMail(String to, String username , String userId,String password) {
 
 		final String FROM = "Sales@expert-works.com";
@@ -261,7 +291,7 @@ public class EmailService {
 	public void sendCredentailsMessagev1(EmailDTO email) throws Exception{
 
 		final String FROM = "Sales@expert-works.com";
-		final String SUBJECT = "Welcome to Expert Works.4";
+		final String SUBJECT = "Welcome to Expert Works";
 		Map<String, Object> model = new HashMap<>();
 		model.put("user", email.getUsername());
 		model.put("userid", email.getLoginId());
@@ -274,6 +304,58 @@ public class EmailService {
 		final String TEXTBODY = "This email was sent from <a href='https://www.expert-works.com'>\"";
 		logger.info("Sending mail to :"+email.getTo() );
 		SendEmailRequest request = new SendEmailRequest().withDestination(new Destination().withToAddresses(email.getTo()))
+				.withMessage(new com.amazonaws.services.simpleemail.model.Message()
+						.withBody(new Body().withHtml(new Content().withCharset("UTF-8").withData(HTMLBODY))
+								.withText(new Content().withCharset("UTF-8").withData(TEXTBODY)))
+						.withSubject(new Content().withCharset("UTF-8").withData(SUBJECT)))
+				.withSource(FROM);
+		client.sendEmail(request);
+
+	}
+	
+	
+	public void sendContactUsEMailv1(EmailDTO email) throws Exception{
+
+		final String FROM = "Sales@expert-works.com";
+		final String SUBJECT = "Thanks for contacting Expert-Works ";
+		
+		Map<String, Object> model = new HashMap<>();
+		model.put("user", email.getUsername());
+						
+		Configuration fmConfiguration = freeMarkerConfigurationFactoryBean.createConfiguration();
+		 Template template = fmConfiguration.getTemplate("email_template/more_details_email.html"); 
+		 String HTMLBODY = FreeMarkerTemplateUtils.processTemplateIntoString(template, model);
+		 
+		 System.out.println("======================html===========================");
+		 //System.out.println(HTMLBODY);
+		
+		
+		final String TEXTBODY = "This email was sent from <a href='https://www.expert-works.com'>\"";
+
+		SendEmailRequest request = new SendEmailRequest().withDestination(new Destination().withToAddresses(email.getTo()))
+				.withMessage(new com.amazonaws.services.simpleemail.model.Message()
+						.withBody(new Body().withHtml(new Content().withCharset("UTF-8").withData(HTMLBODY))
+								.withText(new Content().withCharset("UTF-8").withData(TEXTBODY)))
+						.withSubject(new Content().withCharset("UTF-8").withData(SUBJECT)))
+				.withSource(FROM);
+		client.sendEmail(request);
+	 
+	}
+	
+	public void sendSalesEMail(String content) {
+
+		final String FROM = "Sales@expert-works.com";
+		final String to = "sskprakash@gmail.com";
+		final String SUBJECT = "New Contact Recieved";
+		final String HTMLBODY = "Hi Team, <br>" 
+				+"<br>"+"Please find below Contact recieved"+"<br><br>"
+		        + "<b>Contact </b> : " +"<i>" +content+"</i><br>"
+				+ "<p>This email was sent from <a href='https://www.expert-works.com'>"
+				+ "expert-works.com</a> "
+		        + "<br><br><br> Thanks,<br> Expert Works Team.</a> ";
+		final String TEXTBODY = "This email was sent from <a href='https://www.expert-works.com'>\"";
+
+		SendEmailRequest request = new SendEmailRequest().withDestination(new Destination().withToAddresses(to))
 				.withMessage(new com.amazonaws.services.simpleemail.model.Message()
 						.withBody(new Body().withHtml(new Content().withCharset("UTF-8").withData(HTMLBODY))
 								.withText(new Content().withCharset("UTF-8").withData(TEXTBODY)))

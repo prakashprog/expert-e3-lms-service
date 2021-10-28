@@ -1,19 +1,22 @@
 package com.expertworks.lms.http;
 
-import java.util.Map;
+
+
 
 public class EmailDTO {
 	
-	 String to;
-	 String from;
-	 String subject;
-	 String content;
-	 String password;
-	 String loginId;
-	 String username;
+	 public String to;
+	 public String from;
+	 public String subject;
+	 public String content;
+	 public String password;
+	 public String loginId;
+	 public String username;
+	 public String verificationKey;
+	
        
 	 
-	public EmailDTO(String to,String username,String loginId,String password)
+	 public EmailDTO(String to,String username,String loginId,String password)
 	 {
 		 this.to = to;
 		 this.username = username;
@@ -22,7 +25,7 @@ public class EmailDTO {
 		
 	 }
    
-	public EmailDTO()
+	 public EmailDTO()
 	 {
 		
 	 }
@@ -69,6 +72,14 @@ public class EmailDTO {
 	}
 	public void setUsername(String username) {
 		this.username = username;
+	}
+
+	public String getVerificationKey() {
+		return verificationKey;
+	}
+
+	public void setVerificationKey(String verificationKey) {
+		this.verificationKey = verificationKey;
 	}
 
 }

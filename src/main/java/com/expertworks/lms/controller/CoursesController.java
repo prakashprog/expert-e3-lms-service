@@ -2,9 +2,14 @@ package com.expertworks.lms.controller;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -28,12 +33,12 @@ import com.expertworks.lms.http.CoursesDetailsDTO;
 import com.expertworks.lms.http.ResourceLinkDTO;
 import com.expertworks.lms.http.VideoLinkDTO;
 import com.expertworks.lms.model.Courses;
-import com.expertworks.lms.model.Currency;
 import com.expertworks.lms.model.ResourceLink;
 import com.expertworks.lms.model.UserDetail;
 import com.expertworks.lms.repository.CoursesRepository;
 import com.expertworks.lms.repository.UserDetailsRepository;
 import com.expertworks.lms.util.AuthTokenDetails;
+import com.expertworks.lms.util.CurrencyUtil;
 import com.expertworks.lms.util.JwtUtil;
 
 import io.jsonwebtoken.Claims;
@@ -62,6 +67,9 @@ public class CoursesController {
 
 	@Autowired
 	private JwtUtil jwtUtil;
+	
+	@Autowired
+	private HttpServletRequest request;
 
 	@LogExecutionTime
 	@PostMapping("/courses")
@@ -78,8 +86,15 @@ public class CoursesController {
 	public ApiResponse getCourses() {
 		
 		System.out.println("Request Recievd in getCourses");
-
 		List<Courses> courseList = coursesRepository.getAllCourses();
+		
+		for (Courses courses :courseList)
+		{	if(NumberUtils.isCreatable(courses.getPrice()) && NumberUtils.isCreatable(courses.getActualPrice()))
+			courses.setCurrencies(
+					CurrencyUtil.getCurrencies(Double.parseDouble(courses.getPrice()),Double.parseDouble(courses.getActualPrice())));
+
+		}
+		
 		return new ApiResponse(HttpStatus.OK, SUCCESS, courseList);
 	}
 
@@ -90,6 +105,15 @@ public class CoursesController {
 	public ApiResponse getallCourses() {
 
 		List<Courses> courseList = coursesRepository.getAllCourses();
+		System.out.println("request.getRemoteAddr() :  "+ request.getRemoteAddr());
+		for (Courses courses :courseList)
+		{	if(NumberUtils.isCreatable(courses.getPrice()))
+			if(NumberUtils.isCreatable(courses.getPrice()) && NumberUtils.isCreatable(courses.getActualPrice()))
+				courses.setCurrencies(
+						CurrencyUtil.getCurrencies(Double.parseDouble(courses.getPrice()),Double.parseDouble(courses.getActualPrice())));
+
+		}
+		
 		return new ApiResponse(HttpStatus.OK, SUCCESS, courseList);
 	}
 
@@ -251,12 +275,20 @@ public class CoursesController {
 		coursesDetailsDTO.setType(courselevelData.getType());
 		coursesDetailsDTO.setCourseId(courseId);
 		coursesDetailsDTO.setDescription(courselevelData.getDescription());
-		coursesDetailsDTO.setLeveldesc(courselevelData.getLeveldesc());
+		coursesDetailsDTO.setLeveldesc(courselevelData.getLeveldesc());  
 		coursesDetailsDTO.setIncludes(courselevelData.getIncludes());
 		coursesDetailsDTO.setOrder(courselevelData.getOrder());
 		coursesDetailsDTO.setHours(courselevelData.getHours());
 		coursesDetailsDTO.setRating(courselevelData.getRating());
 		coursesDetailsDTO.setReviews(courselevelData.getReviews());
+		coursesDetailsDTO.setActualPrice(courselevelData.getActualPrice());
+		coursesDetailsDTO.setPrice(courselevelData.getPrice());  
+		
+		System.out.println("NumberUtils.isCreatable ; "+NumberUtils.isCreatable(courselevelData.getPrice()));
+		if(NumberUtils.isCreatable(courselevelData.getPrice()))
+		{
+			coursesDetailsDTO.setCurrencies(CurrencyUtil.getCurrencies(Double.parseDouble(courselevelData.getPrice()),Double.parseDouble(courselevelData.getActualPrice())));
+		}
 
 		return new ApiResponse(HttpStatus.OK, SUCCESS, coursesDetailsDTO);
 	}
@@ -346,11 +378,14 @@ public class CoursesController {
 		coursesDetailsDTO.setRating(courselevel.getRating());
 		coursesDetailsDTO.setReviews(courselevel.getReviews());
 		
-		coursesDetailsDTO.setCurrency(courselevel.getCurrency());
 		
-		List<Currency> list = courselevel.getCurrency();
-		//list.stream().forEach(c -> System.out.println("Currency :"+c.getCountry()));
+		coursesDetailsDTO.setActualPrice(courselevel.getActualPrice());
+		coursesDetailsDTO.setPrice(courselevel.getPrice());
 		
+		//coursesDetailsDTO.setCurrencies(courselevel.getCurrencies());
+		if(NumberUtils.isCreatable(courselevel.getPrice()) && NumberUtils.isCreatable(courselevel.getActualPrice()))
+		coursesDetailsDTO.setCurrencies(
+				CurrencyUtil.getCurrencies(Double.parseDouble(courselevel.getPrice()),Double.parseDouble(courselevel.getActualPrice())));
 
 		return new ApiResponse(HttpStatus.OK, SUCCESS, coursesDetailsDTO);
 	}
@@ -397,5 +432,18 @@ public class CoursesController {
 		
 		return new ApiResponse(HttpStatus.OK, SUCCESS, row);
 	}
+	
+	
+	@CrossOrigin
+	@GetMapping("/getremoteip")
+	public ApiResponse getRemoteAddr() {
+			
+		Map map = new HashMap();
+		map.put("request.getRemoteAddr()", request.getRemoteAddr());
+		map.put("request.getRemoteHost()", request.getRemoteHost());
+		return new ApiResponse(HttpStatus.OK, SUCCESS, map);
+	}
+	
+	
 
 }

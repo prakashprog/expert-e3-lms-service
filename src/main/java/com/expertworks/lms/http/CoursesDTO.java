@@ -29,6 +29,13 @@ public class CoursesDTO  implements Comparable<CoursesDTO> {
 	private boolean completed;
 	private boolean description;
 	private String price;
+	private String actualPrice;
+	
+	private String hours;
+	private String rating;
+	private String reviews;
+	
+	private List<CurrencyDTO> currencies;
 	
 	private String type;
 
@@ -273,6 +280,56 @@ public class CoursesDTO  implements Comparable<CoursesDTO> {
 
 	public void setPrice(String price) {
 		this.price = price;
+	}
+
+
+	public String getActualPrice() {
+		return actualPrice;
+	}
+
+
+	public void setActualPrice(String actualPrice) {
+		this.actualPrice = actualPrice;
+	}
+
+
+	public String getHours() {
+		return hours;
+	}
+
+
+	public void setHours(String hours) {
+		this.hours = hours;
+	}
+
+
+	public String getRating() {
+		return rating;
+	}
+
+
+	public void setRating(String rating) {
+		this.rating = rating;
+	}
+
+
+	public String getReviews() {
+		return reviews;
+	}
+
+
+	public void setReviews(String reviews) {
+		this.reviews = reviews;
+	}
+
+
+	public List<CurrencyDTO> getCurrencies() {
+		return currencies;
+	}
+
+
+	public void setCurrencies(List<CurrencyDTO> currencies) {
+		this.currencies = currencies;
 	}
 
 

@@ -27,7 +27,10 @@ public class CoursesDetailsDTO  {
 	private String reviews;
 	
 	private List<String> includes;
-	private List<Currency> currency;
+	private List<CurrencyDTO> currencies;
+	
+	private String actualPrice;
+	private String price;
 	
 	List<CoursesDTO> sections;
 
@@ -160,13 +163,32 @@ public class CoursesDetailsDTO  {
 		this.reviews = reviews;
 	}
 
-	public List<Currency> getCurrency() {
-		return currency;
+	public String getActualPrice() {
+		return actualPrice;
 	}
 
-	public void setCurrency(List<Currency> currency) {
-		this.currency = currency;
+	public void setActualPrice(String actualPrice) {
+		this.actualPrice = actualPrice;
 	}
+
+
+
+	public String getPrice() {
+		return price;
+	}
+
+	public void setPrice(String price) {
+		this.price = price;
+	}
+
+	public List<CurrencyDTO> getCurrencies() {
+		return currencies;
+	}
+
+	public void setCurrencies(List<CurrencyDTO> currencies) {
+		this.currencies = currencies;
+	}
+
 
 
 

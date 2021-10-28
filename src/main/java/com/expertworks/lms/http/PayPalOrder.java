@@ -11,6 +11,8 @@ public class PayPalOrder {
 	private String method;
 	private String intent;
 	private String description;
+	private String successUrl;
+	private String cancelUrl;
 	
 	
 	public double getPrice() {
@@ -43,5 +45,18 @@ public class PayPalOrder {
 	public void setDescription(String description) {
 		this.description = description;
 	}
+	public String getSuccessUrl() {
+		return successUrl;
+	}
+	public void setSuccessUrl(String successUrl) {
+		this.successUrl = successUrl;
+	}
+	public String getCancelUrl() {
+		return cancelUrl;
+	}
+	public void setCancelUrl(String cancelUrl) {
+		this.cancelUrl = cancelUrl;
+	}
+
 
 }

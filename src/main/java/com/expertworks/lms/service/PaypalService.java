@@ -9,6 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.paypal.api.payments.Amount;
+import com.paypal.api.payments.Details;
+import com.paypal.api.payments.Item;
+import com.paypal.api.payments.ItemList;
 import com.paypal.api.payments.Payer;
 import com.paypal.api.payments.Payment;
 import com.paypal.api.payments.PaymentExecution;
@@ -38,17 +41,40 @@ public class PaypalService {
 		amount.setCurrency(currency);
 		total = new BigDecimal(total).setScale(2, RoundingMode.HALF_UP).doubleValue();
 		amount.setTotal(String.format("%.2f", total));
+		Details amountDetails = new Details();
+		amountDetails.setShipping("1.2");
+		amountDetails.setTax("1.3");
+		//   $details->setShipping(1.2)->setTax(1.3)->setSubtotal(17.5);
+	    // $amount = new Amount();
+	    // $amount->setCurrency("USD")->setTotal(20)->setDetails($details);
+		//amount.setDetails(new Details("ok"));
 
 		Transaction transaction = new Transaction();
-		transaction.setDescription(description);
+		transaction.setDescription(description);//userEmail
 		transaction.setAmount(amount);
+		
+		ItemList itemList = new ItemList();
+		Item item= new Item();	
+		item.setName("Java Beginner");
+		item.setCurrency(currency);
+		item.setQuantity("1");
+		item.setPrice(Double.toString(total));
+		List<Item> myItemList = new ArrayList<Item>();
+		myItemList.add(item);
+		itemList.setItems(myItemList);
+		transaction.setItemList(itemList); 
+		transaction.setDescription("Payment");
+		transaction.setInvoiceNumber("ExpertInvoiceNo1234");
+		
 
 		List<Transaction> transactions = new ArrayList<>();
 		transactions.add(transaction);
+		
 
 		Payer payer = new Payer();
 		payer.setPaymentMethod(method.toString());
 
+		//Below is the Main Object
 		Payment payment = new Payment();
 		payment.setIntent(intent.toString());
 		payment.setPayer(payer);  
@@ -56,6 +82,7 @@ public class PaypalService {
 		RedirectUrls redirectUrls = new RedirectUrls();
 		redirectUrls.setCancelUrl(cancelUrl);
 		redirectUrls.setReturnUrl(successUrl);
+		
 		payment.setRedirectUrls(redirectUrls);
 
 		return payment.create(apiContext);

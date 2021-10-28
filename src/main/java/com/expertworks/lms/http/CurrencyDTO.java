@@ -3,15 +3,11 @@ package com.expertworks.lms.http;
 public class CurrencyDTO {
 		
 	private String country;
-	private String currency;
+	private String name;
 	private String amount;
+	private String actualAmount;
 	
-	public String getCurrency() {
-		return currency;
-	}
-	public void setCurrency(String currency) {
-		this.currency = currency;
-	}
+
 	public String getAmount() {
 		return amount;
 	}
@@ -23,6 +19,18 @@ public class CurrencyDTO {
 	}
 	public void setCountry(String country) {
 		this.country = country;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getActualAmount() {
+		return actualAmount;
+	}
+	public void setActualAmount(String actualAmount) {
+		this.actualAmount = actualAmount;
 	}
 	
 

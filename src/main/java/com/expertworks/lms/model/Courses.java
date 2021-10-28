@@ -6,15 +6,18 @@ import java.util.List;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.StandardToStringStyle;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBRangeKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import com.expertworks.lms.http.CoursesDTO;
+import com.expertworks.lms.http.CurrencyDTO;
 import com.expertworks.lms.http.VideoLinkDTO;
+import com.expertworks.lms.util.CurrencyUtil;
 
-@DynamoDBTable(tableName = "CoursesMaster1")
+@DynamoDBTable(tableName = "CoursesMaster")
 
 public class Courses implements Comparable<Courses> {
 
@@ -67,8 +70,8 @@ public class Courses implements Comparable<Courses> {
 	@DynamoDBAttribute
 	private String price;
 	
-	@DynamoDBAttribute
-	private List<Currency> currency;
+	
+	private List<CurrencyDTO> currencies;
 	
 	@DynamoDBAttribute
 	private String hours;
@@ -78,6 +81,11 @@ public class Courses implements Comparable<Courses> {
 	
 	@DynamoDBAttribute
 	private String reviews;
+	
+	@DynamoDBAttribute
+	private String actualPrice;
+	
+	
 		
 	
 	public int compareTo(Courses courses) {
@@ -183,6 +191,16 @@ public class Courses implements Comparable<Courses> {
 		coursesDTO.setImg(this.img);
 		coursesDTO.setCreateDate(this.createDate);
 		coursesDTO.setPrice(this.price);
+		coursesDTO.setActualPrice(this.actualPrice);
+		coursesDTO.setHours(this.hours);
+		coursesDTO.setReviews(this.reviews);
+		coursesDTO.setRating(this.rating);
+		
+		if(NumberUtils.isCreatable(coursesDTO.getPrice()) && NumberUtils.isCreatable(coursesDTO.getActualPrice()))
+			coursesDTO.setCurrencies(
+					CurrencyUtil.getCurrencies(Double.parseDouble(coursesDTO.getPrice()),Double.parseDouble(coursesDTO.getActualPrice())));
+
+
 		List<VideoLinkDTO> videoLinkDTOList = new ArrayList<VideoLinkDTO>();
 		if (this.getVideoLinks() != null)
 			for (VideoLink videoLink : this.getVideoLinks()) {
@@ -324,12 +342,24 @@ public class Courses implements Comparable<Courses> {
 		this.reviews = reviews;
 	}
 
-	public List<Currency> getCurrency() {
-		return currency;
+
+
+	public String getActualPrice() {
+		return actualPrice;
 	}
 
-	public void setCurrency(List<Currency> currency) {
-		this.currency = currency;
+	public void setActualPrice(String actualPrice) {
+		this.actualPrice = actualPrice;
 	}
+
+	public List<CurrencyDTO> getCurrencies() {
+		return currencies;
+	}
+
+	public void setCurrencies(List<CurrencyDTO> currencies) {
+		this.currencies = currencies;
+	}
+
+
 
 }

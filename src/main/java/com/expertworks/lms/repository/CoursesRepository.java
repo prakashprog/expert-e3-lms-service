@@ -40,7 +40,7 @@ public class CoursesRepository {
 
 		AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard().build();
 
-		ScanRequest scanRequest = new ScanRequest().withTableName("CoursesMaster1");
+		ScanRequest scanRequest = new ScanRequest().withTableName("CoursesMaster");
 
 		ScanResult result = client.scan(scanRequest);
 		for (Map<String, AttributeValue> item : result.getItems()) {

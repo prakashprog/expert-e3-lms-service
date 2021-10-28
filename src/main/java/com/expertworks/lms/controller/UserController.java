@@ -3,6 +3,8 @@ package com.expertworks.lms.controller;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.SecureRandom;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
@@ -40,6 +42,7 @@ import com.expertworks.lms.repository.PartnerRepository;
 import com.expertworks.lms.repository.TeamRepository;
 import com.expertworks.lms.repository.UserRepository;
 import com.expertworks.lms.service.EmailService;
+import com.expertworks.lms.service.TeamService;
 import com.expertworks.lms.util.TokenUtil;
 
 //https://stackoverflow.com/questions/16232833/how-to-respond-with-http-400-error-in-a-spring-mvc-responsebody-method-returnin
@@ -56,7 +59,7 @@ public class UserController {
 	public static final String ROLE_SUPERADMIN = "ROLE_SUPERADMIN";
 	public static final String ACTION_DELETE = "DELETE";
 	public static final String TEAM_B2C = "TEAM_B2C";
-	public static final String TEAM_ADMIN = "TEAM_ADMIN";
+
 	public static final String USER_NOTVERIFIED = "NOTVERIFIED";
 	public static final String USER_VERIFIED = "VERIFIED";
 
@@ -71,6 +74,9 @@ public class UserController {
 
 	@Autowired
 	private TeamRepository teamRepository;
+	
+	@Autowired
+	private TeamService teamService;
 
 	@Autowired
 	private PartnerRepository partnerRepository;
@@ -102,8 +108,17 @@ public class UserController {
 		user.setStatus(USER_NOTVERIFIED);
 		savedUser = userRepository.save(user);
 
-		emailService.sendEmailVerification(user.getEmail(), StringUtils.capitalize(user.getName()), user.getUserId(),
-				savedUser.getVcode());
+		/*emailService.sendEmailVerification(user.getEmail(), StringUtils.capitalize(user.getName()), user.getUserId(),
+				savedUser.getVcode());*/
+		
+		EmailDTO email= new EmailDTO();
+				email.to=user.getEmail();
+				email.username=StringUtils.capitalize(user.getName());
+				email.loginId=user.getUserId();
+				email.verificationKey=savedUser.getVcode();
+		
+		emailService.sendEmailVerificationv1(email);
+		
 		return new ApiResponse(HttpStatus.OK, SUCCESS, savedUser);
 	}
 
@@ -213,15 +228,26 @@ public class UserController {
 		}
 		User savedUser = userRepository.save(user);
 		teamRepository.addUserToTeam(team.getTeamId(), savedUser);
-		emailService.sendCredentailsMessage(user.getEmail(), StringUtils.capitalize(user.getName()), user.getUserId(),
-				user.getPassword());
+//		emailService.sendCredentailsMessagev1(user.getEmail(), StringUtils.capitalize(user.getName()), user.getUserId(),
+//				user.getPassword());
+	
+		EmailDTO email = new EmailDTO();
+		email.to=user.getEmail();
+		email.username= StringUtils.capitalize(user.getName());
+		email.loginId=user.getUserId();
+		email.password=user.getPassword();
+		emailService.sendCredentailsMessagev1(email);
 
 		return new ApiResponse(HttpStatus.OK, SUCCESS, savedUser);
 
 	}
+	
+	
+	
+	
 
 	/*
-	 * Adding user under the Group
+	 * Adding user under the Group(only Admin Users)
 	 */
 	@CrossOrigin
 	@PostMapping("/user")
@@ -236,13 +262,11 @@ public class UserController {
 		if (user.getUserRole() == null)
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userRole is missing");
 		if (user.getUserRole() != null && user.getUserRole().equalsIgnoreCase(ROLE_ADMIN)) {
-			Team team = new Team();
-			team.setSk("details");
-			team.setGroupId(groupId);
-			team.setName(TEAM_ADMIN); 
-			
-			Team savedTeam = teamRepository.save(team);
-			teamId = savedTeam.getTeamId();
+			Team adminTeam = teamService.createOrGetAdminTeam(groupId);
+			teamId = adminTeam.getTeamId();
+			System.out.println("createUser  TeamId : "+teamId);
+			user.setTeamId(teamId);
+			user.setTeamType(adminTeam.getTeamType());
 		}
 		if (teamId != null) {
 			Team team = teamRepository.load(teamId, "details");
@@ -333,6 +357,14 @@ public class UserController {
 			list = userRepository.queryOnGSI("groupId-index", "groupId", groupId);
 		} else
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "RequestParam teamId/groupId required");
+		
+		
+		Collections.sort(list, new Comparator<User>() {
+	            public int compare(User u1, User u2) {
+	                // notice the cast to (Integer) to invoke compareTo
+	                return (u2.getCreatedDate()).compareTo(u1.getCreatedDate());
+	            }
+	        });
 
 		return new ApiResponse(HttpStatus.OK, SUCCESS, list);
 	}

@@ -2,20 +2,15 @@ package com.expertworks.lms.model;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument;
 
-@DynamoDBDocument
+//@DynamoDBDocument
 
 public class Currency {
 		
 	private String country;
-	private String currency;
+	private String name;
 	private String amount;
 	
-	public String getCurrency() {
-		return currency;
-	}
-	public void setCurrency(String currency) {
-		this.currency = currency;
-	}
+	
 	public String getAmount() {
 		return amount;
 	}
@@ -27,6 +22,12 @@ public class Currency {
 	}
 	public void setCountry(String country) {
 		this.country = country;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
 	}
 	
 

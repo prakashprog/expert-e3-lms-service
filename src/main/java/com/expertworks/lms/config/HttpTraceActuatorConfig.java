@@ -27,6 +27,7 @@ public class HttpTraceActuatorConfig {
 	        loggingFilter.setIncludePayload(true);
 	        loggingFilter.setIncludeHeaders(true);
 	        loggingFilter.setMaxPayloadLength(64000);
+	        loggingFilter.setAfterMessagePrefix("REQUEST DATA : ");
 	        return loggingFilter;
 	    }
 	

@@ -1,5 +1,7 @@
 package com.expertworks.lms.controller;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.expertworks.lms.http.ApiResponse;
 import com.expertworks.lms.http.TeamDTO;
 import com.expertworks.lms.model.Group;
+import com.expertworks.lms.model.Partner;
 import com.expertworks.lms.model.Team;
 import com.expertworks.lms.model.User;
 import com.expertworks.lms.repository.GroupRepository;
@@ -56,9 +59,28 @@ public class TeamController {
 		if (groupId == null || groupId.equalsIgnoreCase(""))
 			list = teamRepository.getAll();
 		else
-			list = teamRepository.queryOnGSI("groupId-index", "groupId", groupId);
+			list = teamRepository.queryOnGSI("groupId-index", "groupId", groupId);  
+		
+		 Collections.sort(list, new Comparator<Team>() {
+	            public int compare(Team t1, Team t2) {
+	                // notice the cast to (Integer) to invoke compareTo
+	                return (t2.getCreatedDate()).compareTo(t1.getCreatedDate());
+	            }
+	        });
+		
 		return new ApiResponse(HttpStatus.OK, SUCCESS, list);
 	}
+	
+	@CrossOrigin
+	@GetMapping("/teambyName")
+	public ApiResponse getTeamByName(@RequestParam(required = false, name = "name") String name) {
+
+		List<Team> list = null;
+		list = teamRepository.queryOnGSI("name-index", "name", name);
+		return new ApiResponse(HttpStatus.OK, SUCCESS, list);
+	}
+	
+	
 
 	@CrossOrigin
 	@GetMapping("/team/{teamId}")
@@ -67,7 +89,7 @@ public class TeamController {
 		TeamDTO teamDTO = new TeamDTO();
 		List<Team> list = teamRepository.get(teamId);
 		for (Team team : list) {
-			if (team.getSk().equalsIgnoreCase("details")) {
+			if (team.getSk().equalsIgnoreCase("details")) {  
 				teamDTO.setTeamId(teamId);
 				teamDTO.setName(team.getName());
 				teamDTO.setCreatedDate(team.getCreatedDate());

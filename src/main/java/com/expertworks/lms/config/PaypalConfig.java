@@ -6,8 +6,10 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.web.context.WebApplicationContext;
 
-import com.paypal.api.payments.PaymentHistory;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.OAuthTokenCredential;
 import com.paypal.base.rest.PayPalRESTException;
@@ -35,10 +37,15 @@ public class PaypalConfig {
 	}
 
 	@Bean
+	//@Scope("prototype")
+	@Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
 	public APIContext apiContext() throws PayPalRESTException {
 		APIContext context = new APIContext(oAuthTokenCredential().getAccessToken());
 		context.setConfigurationMap(paypalSdkConfig());
+		
 		return context;
 	}
+	
+	
 
 }

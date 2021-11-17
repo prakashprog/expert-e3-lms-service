@@ -25,10 +25,14 @@ public class Pack implements Comparable<Pack> {
 	private String name;
 	
 	@DynamoDBAttribute
-	private String subscription;
+	private String subscriptionFrequency;
+	
+	@DynamoDBAttribute
+	private String subscriptionPackage;
 	
 	@DynamoDBAttribute
 	private String price;
+	
 	
 	@DynamoDBAttribute
 	private List<String> features;
@@ -92,14 +96,27 @@ public class Pack implements Comparable<Pack> {
 	}
 
 
-	public String getSubscription() {
-		return subscription;
+	public String getSubscriptionFrequency() {
+		return subscriptionFrequency;
 	}
 
 
-	public void setSubscription(String subscription) {
-		this.subscription = subscription;
+	public void setSubscriptionFrequency(String subscriptionFrequency) {
+		this.subscriptionFrequency = subscriptionFrequency;
 	}
+
+
+	public String getSubscriptionPackage() {
+		return subscriptionPackage;
+	}
+
+
+	public void setSubscriptionPackage(String subscriptionPackage) {
+		this.subscriptionPackage = subscriptionPackage;
+	}
+
+
+
 
 
 

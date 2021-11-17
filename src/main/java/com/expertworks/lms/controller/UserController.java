@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,10 +34,12 @@ import com.expertworks.lms.http.ApiResponse;
 import com.expertworks.lms.http.EmailDTO;
 import com.expertworks.lms.http.TransferDTO;
 import com.expertworks.lms.http.UserDTO;
+import com.expertworks.lms.model.Acl;
 import com.expertworks.lms.model.Group;
 import com.expertworks.lms.model.Partner;
 import com.expertworks.lms.model.Team;
 import com.expertworks.lms.model.User;
+import com.expertworks.lms.repository.AclRepository;
 import com.expertworks.lms.repository.GroupRepository;
 import com.expertworks.lms.repository.PartnerRepository;
 import com.expertworks.lms.repository.TeamRepository;
@@ -56,6 +59,7 @@ public class UserController {
 	public static final String SUCCESS = "success";
 	public static final String ROLE_ADMIN = "ROLE_ADMIN";
 	public static final String ROLE_USER = "ROLE_USER";
+	public static final String ROLE_PUBUSER = "ROLE_PUBUSER";
 	public static final String ROLE_SUPERADMIN = "ROLE_SUPERADMIN";
 	public static final String ACTION_DELETE = "DELETE";
 	public static final String TEAM_B2C = "TEAM_B2C";
@@ -80,6 +84,9 @@ public class UserController {
 
 	@Autowired
 	private PartnerRepository partnerRepository;
+	
+	@Autowired
+	private AclRepository aclRepository;
 
 	@Autowired
 	TokenUtil tokenUtil;
@@ -101,9 +108,10 @@ public class UserController {
 
 		user.setUserId(user.getEmail());
 		user.setUserName(user.getName());
-		user.setTeamId(TEAM_B2C);
+		//unique TeamId for each signup 
+		user.setTeamId(TEAM_B2C+"-"+user.getEmail());
 		user.setStatus(USER_NOTVERIFIED);
-		user.setUserRole(ROLE_USER);
+		user.setUserRole(ROLE_PUBUSER);
 		user.setEnabled(false);// By default user is disabled
 		user.setStatus(USER_NOTVERIFIED);
 		savedUser = userRepository.save(user);
@@ -430,6 +438,19 @@ public class UserController {
 	public ApiResponse update(@PathVariable("userId") String userId, @RequestBody User user) {
 		user.setUserId(userId);
 		return new ApiResponse(HttpStatus.OK, SUCCESS, userRepository.update(userId, user));
+	}
+	
+	@CrossOrigin
+	@GetMapping("/user/{role}/pages")
+	
+	public ApiResponse pagesAcessable(@PathVariable("role") String role) {
+		Acl acl = aclRepository.load(role);
+		System.out.println("acl :  "+acl);
+        if(acl!=null)		
+    	   return new ApiResponse(HttpStatus.OK, SUCCESS, acl);
+        else
+    	   throw new ResponseStatusException(HttpStatus.FORBIDDEN, "role not present/empty");
+    	  
 	}
 
 	@CrossOrigin

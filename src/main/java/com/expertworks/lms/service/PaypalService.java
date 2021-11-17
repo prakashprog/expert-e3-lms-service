@@ -84,7 +84,8 @@ public class PaypalService {
 		redirectUrls.setReturnUrl(successUrl);
 		
 		payment.setRedirectUrls(redirectUrls);
-
+		
+		System.out.println("apiContext.hashCode() : "+apiContext.hashCode()+";"+apiContext.getAccessToken());
 		return payment.create(apiContext);
 	}
 	

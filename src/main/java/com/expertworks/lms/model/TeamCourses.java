@@ -50,6 +50,12 @@ public class TeamCourses {
 	public TeamCourses() {
 	}
 
+	
+	public TeamCourses(String teamId,String courseId) {
+		
+		this.teamId = teamId;
+		this.courseId=courseId;
+	}
 	/**
 	 * @return the teamId
 	 */

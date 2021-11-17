@@ -17,20 +17,34 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.expertworks.lms.http.ApiResponse;
+import com.expertworks.lms.http.DeletedCoursesDTO;
 import com.expertworks.lms.http.PartnerDTO;
 import com.expertworks.lms.model.Group;
 import com.expertworks.lms.model.Partner;
+import com.expertworks.lms.model.Team;
+import com.expertworks.lms.model.TeamCourses;
+import com.expertworks.lms.repository.GroupRepository;
 import com.expertworks.lms.repository.PartnerRepository;
+import com.expertworks.lms.repository.TeamRepository;
+import com.expertworks.lms.service.TeamCoursesService;
 
 @RestController
 @Component
 public class PartnerController {
 
 	public static final String SUCCESS = "success";
-	
 
 	@Autowired
 	private PartnerRepository partnerRepository;
+
+	@Autowired
+	private GroupRepository groupRepository;
+
+	@Autowired
+	private TeamRepository teamRepository;
+
+	@Autowired
+	private TeamCoursesService teamCoursesService;
 
 	@CrossOrigin
 	@PostMapping("/partner")
@@ -51,38 +65,38 @@ public class PartnerController {
 		return new ApiResponse(HttpStatus.OK, SUCCESS, savedPartner);
 	}
 
-	/*@CrossOrigin
-	@GetMapping("/partner")
-	public ApiResponse getAll() {
+	/*
+	 * @CrossOrigin
+	 *
+	 * @GetMapping("/partner") public ApiResponse getAll() {
+	 *
+	 * List<Partner> list = partnerRepository.getAll(); return new
+	 * ApiResponse(HttpStatus.OK, SUCCESS, list); }
+	 */
 
-		List<Partner> list = partnerRepository.getAll();
-		return new ApiResponse(HttpStatus.OK, SUCCESS, list);
-	}*/
-	
-	
 	@CrossOrigin
 	@GetMapping("/partner")
 	public ApiResponse getAll() {
 
 		List<Partner> list = partnerRepository.queryOnGSI("sk-index", "sk", "details");
-		
-		 Collections.sort(list, new Comparator<Partner>() {
-	            public int compare(Partner p1, Partner p2) {
-	                // notice the cast to (Integer) to invoke compareTo
-	                return (p2.getCreatedDate()).compareTo(p1.getCreatedDate());
-	            }
-	        });
-		
+
+		Collections.sort(list, new Comparator<Partner>() {
+			@Override
+			public int compare(Partner p1, Partner p2) {
+				// notice the cast to (Integer) to invoke compareTo
+				return (p2.getCreatedDate()).compareTo(p1.getCreatedDate());
+			}
+		});
+
 		return new ApiResponse(HttpStatus.OK, SUCCESS, list);
 	}
-		
 
 	@CrossOrigin
 	@GetMapping("/partner/{partnerId}")
 	public ApiResponse get(@PathVariable("partnerId") String partnerId) {
 
 		PartnerDTO partnerDTO = new PartnerDTO();
-		
+
 		List<Partner> list = partnerRepository.get(partnerId);
 		for (Partner partner : list) {
 			if (partner.getSk().equalsIgnoreCase("details")) {
@@ -119,6 +133,34 @@ public class PartnerController {
 	@PutMapping("/partner/{partnerId}")
 	public String update(@PathVariable("partnerId") String partnerId, @RequestBody Partner partner) {
 		return partnerRepository.update(partnerId, partner);
+	}
+
+	@CrossOrigin
+	@PostMapping("/partner/{partnerId}/deletecourses")
+	public DeletedCoursesDTO revokePartner(@PathVariable("partnerId") String partnerId, @RequestBody Partner partner) {
+
+		List<Group> groupList = null;
+		List<Team> teamList = null;
+		List<TeamCourses> teamCoursesList = null;
+		DeletedCoursesDTO deletedCoursesDTO = new DeletedCoursesDTO();
+
+		groupList = groupRepository.queryOnGSI("partnerId-index", "partnerId", partnerId);
+
+		if (groupList != null && groupList.size() > 0)
+			for (Group group : groupList) {
+				teamList = teamRepository.queryOnGSI("groupId-index", "groupId", group.getGroupId());
+				if (teamList != null && teamList.size() > 0)
+					for (Team team : teamList) {
+						teamCoursesList = teamCoursesService.deleteCourses(team.getTeamId());
+						deletedCoursesDTO.getTeamCoursesList().addAll(teamCoursesList);
+					}
+
+			}
+
+		deletedCoursesDTO.setGroupList(groupList);
+		deletedCoursesDTO.setTeamList(teamList);
+
+		return deletedCoursesDTO;
 	}
 
 }

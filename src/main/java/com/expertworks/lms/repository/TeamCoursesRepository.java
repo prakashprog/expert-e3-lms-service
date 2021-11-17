@@ -101,11 +101,14 @@ public class TeamCoursesRepository {
 //        return dynamoDBMapper.load(TeamCourses.class, teamId);
 //    }
 
-    public String delete(String teamId) {
-    	TeamCourses teamCourses = dynamoDBMapper.load(TeamCourses.class, teamId);
-        dynamoDBMapper.delete(teamCourses);
+    public String delete(String teamId, String rangeKey) {
+    	TeamCourses teamCourses = dynamoDBMapper.load(TeamCourses.class, teamId,rangeKey);
+       if(teamCourses!=null)
+    		   dynamoDBMapper.delete(teamCourses);
         return "Team Course Deleted!";
     }
+    
+   
 
     public String update(String teamId, TeamCourses teamCourses) {
         dynamoDBMapper.save(teamId,

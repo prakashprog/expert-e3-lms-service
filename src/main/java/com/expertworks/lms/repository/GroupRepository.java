@@ -47,7 +47,7 @@ public class GroupRepository {
 	}
 	
 	
-
+      //list = groupRepository.queryOnGSI("partnerId-index", "partnerId", partnerId);
 	public List<Group> queryOnGSI(String indexName, String attributeName, String attributeValue) {
 
 		Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();

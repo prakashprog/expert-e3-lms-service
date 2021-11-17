@@ -10,14 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBSaveExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
 import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedScanList;
 import com.amazonaws.services.dynamodbv2.datamodeling.QueryResultPage;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
-import com.amazonaws.services.dynamodbv2.model.ExpectedAttributeValue;
 import com.expertworks.lms.model.Team;
 import com.expertworks.lms.model.User;
 
@@ -44,6 +43,7 @@ public class TeamRepository {
 		return list;
 	}
 
+	//list = teamRepository.queryOnGSI("groupId-index", "groupId", groupId);
 	public List<Team> queryOnGSI(String indexName, String attributeName, String attributeValue) {
 
 		Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
@@ -81,8 +81,8 @@ public class TeamRepository {
 
 	}
 
-	public Team load(String teamId,String sk) {
-		Team team = dynamoDBMapper.load(Team.class,teamId,sk);
+	public Team load(String teamId, String sk) {
+		Team team = dynamoDBMapper.load(Team.class, teamId, sk);
 		return team;
 	}
 
@@ -102,15 +102,29 @@ public class TeamRepository {
 		return Team;
 	}
 
-	public String delete(String TeamId) {
-		Team teamCourses = dynamoDBMapper.load(Team.class, TeamId);
-		dynamoDBMapper.delete(teamCourses);
-		return "Team  Deleted!";
+	public String delete(String teamId, String rangeKey) {
+		Team team = dynamoDBMapper.load(Team.class, teamId, rangeKey);
+		dynamoDBMapper.delete(team);
+		return "Team with TeamId: " + teamId + " Deleted!";
 	}
 
-	public String update(String TeamId, Team Team) {
-		dynamoDBMapper.save(TeamId, new DynamoDBSaveExpression().withExpectedEntry("teamId",
-				new ExpectedAttributeValue(new AttributeValue().withS(TeamId))));
-		return TeamId;
+	public void update(String teamId, Team team) {
+
+		
+		  DynamoDBMapperConfig dynamoDBMapperConfig = new
+		  DynamoDBMapperConfig.Builder()
+		  .withConsistentReads(DynamoDBMapperConfig.ConsistentReads.CONSISTENT)
+		  .withSaveBehavior(DynamoDBMapperConfig.SaveBehavior.APPEND_SET).build();
+		  dynamoDBMapper.save(team, dynamoDBMapperConfig);
+		 
+
+		/*
+		 * Team teaminDB = dynamoDBMapper.load(Team.class, team.getTeamId(),"details");
+		 * dynamoDBMapper.save(teaminDB, new
+		 * DynamoDBSaveExpression().withExpectedEntry("teamId", new
+		 * ExpectedAttributeValue(new AttributeValue().withS(team.getTeamId()))));
+		 */
+
+		
 	}
 }

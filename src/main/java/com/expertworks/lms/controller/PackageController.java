@@ -51,14 +51,14 @@ public class PackageController {
 
 	@CrossOrigin
 	@GetMapping("/packages/{packageId}")
-	public ApiResponse getCourses(@PathVariable("packageId") String packageId) {
+	public ApiResponse getPackage(@PathVariable("packageId") String packageId) {
 		List<Pack> list = packageRepository.get(packageId);
 		return new ApiResponse(HttpStatus.OK, SUCCESS, list);
 	}
 
 	@CrossOrigin
 	@DeleteMapping("/packages/{packageId}")
-	public String deleteCourse(@PathVariable("contactId") String contactId) {
+	public String deletePackage(@PathVariable("contactId") String contactId) {
 		return packageRepository.delete(contactId);
 	}
 

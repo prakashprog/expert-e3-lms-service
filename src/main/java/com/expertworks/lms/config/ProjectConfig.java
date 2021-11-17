@@ -5,6 +5,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
@@ -83,14 +84,25 @@ public class ProjectConfig extends ResourceServerConfigurerAdapter {
     }
     
     @Bean
+    @Primary
     public ResourceServerTokenServices tokenService() {
         RemoteTokenServices tokenServices = new RemoteTokenServices();
         tokenServices.setClientId(clientId);
         tokenServices.setClientSecret(secret);
         tokenServices.setCheckTokenEndpointUrl(checkTokenEndPoint);
+     
         return tokenServices;
     }
     
+    
+//    @Bean
+//    @Primary
+//    public ResourceServerTokenServices tokenServices() {
+//        final DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
+//        defaultTokenServices.setTokenStore(tokenStore());
+//        defaultTokenServices.setReuseRefreshToken(true);
+//        return defaultTokenServices;
+//    }
 
     
     

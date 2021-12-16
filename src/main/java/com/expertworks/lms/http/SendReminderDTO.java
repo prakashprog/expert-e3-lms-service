@@ -14,6 +14,10 @@ public class SendReminderDTO {
 	
 	private String percentageCompleted;
 	
+	private String adminEmail;
+	
+	private String adminUserId;
+	
 	
 	public static enum Status {
 		COMPLETED, IN_PROGRESS, NOT_STARTED;
@@ -78,4 +82,26 @@ public class SendReminderDTO {
 	public void setPercentageCompleted(String percentageCompleted) {
 		this.percentageCompleted = percentageCompleted;
 	}
+
+
+	public String getAdminEmail() {
+		return adminEmail;
+	}
+
+
+	public void setAdminEmail(String adminEmail) {
+		this.adminEmail = adminEmail;
+	}
+
+
+	public String getAdminUserId() {
+		return adminUserId;
+	}
+
+
+	public void setAdminUserId(String adminUserId) {
+		this.adminUserId = adminUserId;
+	}
+	
+	
 }

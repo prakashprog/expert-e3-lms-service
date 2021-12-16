@@ -28,7 +28,10 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.view.RedirectView;
 
 import com.expertworks.lms.http.ApiResponse;
+import com.expertworks.lms.http.BaseResponse;
+import com.expertworks.lms.http.BaseResponse.ResponseCode;
 import com.expertworks.lms.http.EmailDTO;
+import com.expertworks.lms.http.SendReminderDTO;
 import com.expertworks.lms.http.TransferDTO;
 import com.expertworks.lms.http.UserDTO;
 import com.expertworks.lms.model.Group;
@@ -68,6 +71,18 @@ public class EmailController {
 		
 		
 		
+	}
+	
+	@CrossOrigin
+	@PostMapping("/sendReminder")
+	public BaseResponse sendReminder(@RequestBody SendReminderDTO sendReminderDTO) {
+		EmailDTO email = new EmailDTO();
+		email.from = sendReminderDTO.getFromEmail();
+		email.to = sendReminderDTO.getUserEmail();
+		//write code to send email with appropriate email template.
+		BaseResponse bs = new BaseResponse();
+		bs.setResponseCode(ResponseCode.SUCCESS);
+		return bs;
 	}
 
 

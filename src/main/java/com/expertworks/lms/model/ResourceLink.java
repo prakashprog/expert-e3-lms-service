@@ -3,21 +3,30 @@ package com.expertworks.lms.model;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument;
 import com.expertworks.lms.http.ResourceLinkDTO;
-import com.expertworks.lms.http.VideoLinkDTO;
 
 @DynamoDBDocument
 public class ResourceLink {
-	
+
     @DynamoDBAttribute
 	private String link;
-    
+
     @DynamoDBAttribute
 	private String type;
-	
+
     @DynamoDBAttribute
  	private String title;
-	
-	
+
+
+    public ResourceLink(String link,String type, String title){
+    	this.link = link;
+    	this.type = type;
+    	this.title = title;
+    }
+    public ResourceLink()
+    {
+
+    }
+
 	public ResourceLinkDTO toResourceLinkDTO()
 	{
 		ResourceLinkDTO resourceLinkDTO = new ResourceLinkDTO();
@@ -62,9 +71,9 @@ public class ResourceLink {
 	public void setTitle(String title) {
 		this.title = title;
 	}
-	
-	
-	
-	
-	
+
+
+
+
+
 }

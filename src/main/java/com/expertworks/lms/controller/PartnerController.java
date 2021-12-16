@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.expertworks.lms.http.ApiResponse;
 import com.expertworks.lms.http.DeletedCoursesDTO;
-import com.expertworks.lms.http.PartnerDTO;
+import com.expertworks.lms.http.PartnerDetailsDTO;
 import com.expertworks.lms.model.Group;
 import com.expertworks.lms.model.Partner;
 import com.expertworks.lms.model.Team;
@@ -51,18 +51,25 @@ public class PartnerController {
 	public ApiResponse save(@RequestBody Partner partner) {
 		partner.setSk("details");
 		Partner savedPartner = partnerRepository.save(partner);
-
-		if (partner.getGroupIds() != null && partner.getGroupIds().size() > 0) {
-			for (String groupId : partner.getGroupIds()) {
-				// Group Id are present
-				Partner newRow = new Partner();
-				newRow.setPartnerId(savedPartner.getPartnerId());
-				newRow.setSk("G#" + groupId);
-				partnerRepository.save(newRow);
-			}
-		}
+		/*
+		 * if (partner.getGroupIds() != null && partner.getGroupIds().size() > 0) { for
+		 * (String groupId : partner.getGroupIds()) { // Group Id are present Partner
+		 * newRow = new Partner(); newRow.setPartnerId(savedPartner.getPartnerId());
+		 * newRow.setSk("G#" + groupId); partnerRepository.save(newRow); } }
+		 */
 
 		return new ApiResponse(HttpStatus.OK, SUCCESS, savedPartner);
+	}
+
+
+
+	@CrossOrigin
+	@PostMapping("/partner/update")
+	public ApiResponse update(@RequestBody Partner partner) {
+
+		partnerRepository.update(partner);
+
+		return new ApiResponse(HttpStatus.OK, SUCCESS, teamRepository.load(partner.getPartnerId(), "details"));
 	}
 
 	/*
@@ -91,29 +98,40 @@ public class PartnerController {
 		return new ApiResponse(HttpStatus.OK, SUCCESS, list);
 	}
 
+//	@CrossOrigin
+//	@GetMapping("/partner/{partnerId}")
+//	public ApiResponse get(@PathVariable("partnerId") String partnerId) {
+//
+//		PartnerDTO partnerDTO = new PartnerDTO();
+//
+//		List<Partner> list = partnerRepository.get(partnerId);
+//		for (Partner partner : list) {
+//			if (partner.getSk().equalsIgnoreCase("details")) {
+//				partnerDTO.setPartnerId(partnerId);
+//				partnerDTO.setName(partner.getName());
+//				partnerDTO.setCreatedDate(partner.getCreatedDate());
+//			} else {
+//				Group group = new Group();
+//				group.setGroupId(partner.getGroupId());
+//				group.setName(partner.getName());
+//				partnerDTO.getGroups().add(group);
+//
+//			}
+//		}
+//		// List list = coursesRepository.getmy1Courses(courseId,"S#1");
+//		return new ApiResponse(HttpStatus.OK, SUCCESS, partnerDTO);
+//	}
+
+
 	@CrossOrigin
 	@GetMapping("/partner/{partnerId}")
 	public ApiResponse get(@PathVariable("partnerId") String partnerId) {
 
-		PartnerDTO partnerDTO = new PartnerDTO();
-
-		List<Partner> list = partnerRepository.get(partnerId);
-		for (Partner partner : list) {
-			if (partner.getSk().equalsIgnoreCase("details")) {
-				partnerDTO.setPartnerId(partnerId);
-				partnerDTO.setName(partner.getName());
-				partnerDTO.setCreatedDate(partner.getCreatedDate());
-			} else {
-				Group group = new Group();
-				group.setGroupId(partner.getGroupId());
-				group.setName(partner.getName());
-				partnerDTO.getGroups().add(group);
-
-			}
-		}
-		// List list = coursesRepository.getmy1Courses(courseId,"S#1");
-		return new ApiResponse(HttpStatus.OK, SUCCESS, partnerDTO);
+		return new ApiResponse(HttpStatus.OK, SUCCESS, partnerRepository.load(partnerId, "details"));
 	}
+
+
+
 
 	@CrossOrigin
 	@DeleteMapping("/partner/{partnerId}")
@@ -129,11 +147,13 @@ public class PartnerController {
 		return new ApiResponse(HttpStatus.OK, SUCCESS, savedRow);
 	}
 
-	@CrossOrigin
-	@PutMapping("/partner/{partnerId}")
-	public String update(@PathVariable("partnerId") String partnerId, @RequestBody Partner partner) {
-		return partnerRepository.update(partnerId, partner);
-	}
+	/*
+	 * @CrossOrigin
+	 *
+	 * @PutMapping("/partner/{partnerId}") public String
+	 * update(@PathVariable("partnerId") String partnerId, @RequestBody Partner
+	 * partner) { return partnerRepository.update(partnerId); }
+	 */
 
 	@CrossOrigin
 	@PostMapping("/partner/{partnerId}/deletecourses")
@@ -143,7 +163,14 @@ public class PartnerController {
 		List<Team> teamList = null;
 		List<TeamCourses> teamCoursesList = null;
 		DeletedCoursesDTO deletedCoursesDTO = new DeletedCoursesDTO();
+		deletedCoursesDTO.setPartnerId(partnerId);
 
+		partner = partnerRepository.load(partnerId, "details");
+		if(partner==null)
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Partner with partnerId : "+ partnerId + " is missing");
+
+		deletedCoursesDTO.setPartner(partner);
 		groupList = groupRepository.queryOnGSI("partnerId-index", "partnerId", partnerId);
 
 		if (groupList != null && groupList.size() > 0)
@@ -152,7 +179,7 @@ public class PartnerController {
 				if (teamList != null && teamList.size() > 0)
 					for (Team team : teamList) {
 						teamCoursesList = teamCoursesService.deleteCourses(team.getTeamId());
-						deletedCoursesDTO.getTeamCoursesList().addAll(teamCoursesList);
+						deletedCoursesDTO.getDeletedteamCourses().addAll(teamCoursesList);
 					}
 
 			}
@@ -162,5 +189,40 @@ public class PartnerController {
 
 		return deletedCoursesDTO;
 	}
+
+	@CrossOrigin
+	@PostMapping("/partner/{partnerId}/details")
+	public PartnerDetailsDTO partnerDetails(@PathVariable("partnerId") String partnerId, @RequestBody Partner partner) {
+
+		List<Group> groupList = null;
+		List<Team> teamList = null;
+		List<TeamCourses> teamCoursesList = null;
+		PartnerDetailsDTO partnerDetailsDTO = new PartnerDetailsDTO();
+		partnerDetailsDTO.setPartnerId(partnerId);
+
+		partner = partnerRepository.load(partnerId, "details");
+		if(partner==null)
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Partner with partnerId : "+ partnerId + " is missing");
+
+		partnerDetailsDTO.setPartner(partner);
+		groupList = groupRepository.queryOnGSI("partnerId-index", "partnerId", partnerId);
+
+		if (groupList != null && groupList.size() > 0)
+			for (Group group : groupList) {
+				teamList = teamRepository.queryOnGSI("groupId-index", "groupId", group.getGroupId());
+				if (teamList != null && teamList.size() > 0)
+					for (Team team : teamList) {
+						partnerDetailsDTO.getDeletedteamCourses().addAll(teamCoursesList);
+					}
+
+			}
+
+		partnerDetailsDTO.setGroupList(groupList);
+		partnerDetailsDTO.setTeamList(teamList);
+
+		return partnerDetailsDTO;
+	}
+
 
 }

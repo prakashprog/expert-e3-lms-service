@@ -6,16 +6,13 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.StandardToStringStyle;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 
 public class CoursesDTO  implements Comparable<CoursesDTO> {
-   
-	
+
+
 	private static final long serialVersionUID = -8091879091924046844L;
-   
-	
+
+
 	private String courseId;
 	private String sk;
 	private String createDate;
@@ -30,24 +27,26 @@ public class CoursesDTO  implements Comparable<CoursesDTO> {
 	private boolean description;
 	private String price;
 	private String actualPrice;
-	
+
 	private String hours;
 	private String rating;
 	private String reviews;
-	
+	private String status;
+
 	private List<CurrencyDTO> currencies;
-	
+
 	private String type;
 
 	private String level;
 
-	 public int compareTo(CoursesDTO coursesDTO) {  
-		    return Integer.parseInt(sk.substring(2))- Integer.parseInt(coursesDTO.sk.substring(2));  
-		    
-		 
-		  }   
-	
-	
+	 @Override
+	public int compareTo(CoursesDTO coursesDTO) {
+		    return Integer.parseInt(sk.substring(2))- Integer.parseInt(coursesDTO.sk.substring(2));
+
+
+		  }
+
+
 	/**
 	 * @return the courseId
 	 */
@@ -179,7 +178,7 @@ public class CoursesDTO  implements Comparable<CoursesDTO> {
 	}
 
 
-	
+
 
 
 	/**
@@ -262,7 +261,7 @@ public class CoursesDTO  implements Comparable<CoursesDTO> {
 //		 CoursesDTO coursesDTO  = (CoursesDTO)obj;
 //		 	return coursesDTO.getSk().equalsIgnoreCase(this.sk);
 //	}
-	 
+
 	 @Override
 		public String toString() {
 		     StandardToStringStyle style = new StandardToStringStyle();
@@ -333,5 +332,15 @@ public class CoursesDTO  implements Comparable<CoursesDTO> {
 	}
 
 
-	
+	public String getStatus() {
+		return status;
+	}
+
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+
+
 }

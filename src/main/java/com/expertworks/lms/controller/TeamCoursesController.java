@@ -37,13 +37,14 @@ import io.jsonwebtoken.Claims;
 public class TeamCoursesController {
 
 	public static final String SUCCESS = "success";
+	public static final String ALL_COURSES = "ALL";
 
 	@Autowired
 	private TeamCoursesRepository teamCoursesRepository;
 
 	@Autowired
 	private CoursesRepository coursesRepository;
-	
+
 	@Autowired
 	private JwtUtil jwtUtil;
 
@@ -57,7 +58,7 @@ public class TeamCoursesController {
 
 	/**
 	 * Get all courses for a Team_courses Table
-	 * 
+	 *
 	 * @return
 	 */
 	@CrossOrigin
@@ -92,10 +93,10 @@ public class TeamCoursesController {
 		if (credentials instanceof AuthTokenDetails) {
 			teamIdinToken = ((AuthTokenDetails) credentials).getTeamId();
 		}
-		
+
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		Object details = authentication.getDetails();
-		
+
 		if (details instanceof OAuth2AuthenticationDetails) {
 			OAuth2AuthenticationDetails oAuth2AuthenticationDetails = (OAuth2AuthenticationDetails) details;
 			System.out.println(":::==" + oAuth2AuthenticationDetails.getTokenValue());
@@ -107,24 +108,34 @@ public class TeamCoursesController {
 		System.out.println("teamIdinToken : " + teamIdinToken);
 		teamCourses = teamCoursesRepository.getTeamCourses(teamIdinToken);
 
+
+		/*
+		 * if (teamCourses != null && teamCourses.size() == 1 &&
+		 * teamCourses.get(0).getCourseId().equalsIgnoreCase(ALL_COURSES)) {
+		 * List<Courses> allCourses = coursesRepository.getAllCourses(); return new
+		 * ApiResponse(HttpStatus.OK, SUCCESS, allCourses); }
+		 */
+
+
 		for (TeamCourses teamCourse : teamCourses) {
 
 			System.out.println("TeamId : " + teamIdinToken + " , CourseId : " + teamCourse.getCourseId() + ",total:"
 					+ teamCourses.size());
 
-			//List<Courses> list = coursesRepository.getMetaDetailsCourses(teamCourse.getCourseId());
+			// List<Courses> list =
+			// coursesRepository.getMetaDetailsCourses(teamCourse.getCourseId());
 			Courses course = coursesRepository.getCoursesMetaDetails(teamCourse.getCourseId());
-			
-			//if (list != null && list.size() > 0) {
-			if(course != null) {
+
+			// if (list != null && list.size() > 0) {
+			if (course != null) {
 				CoursesDTO coursesDTO = course.toCourseDTO();
 				coursesDTOList.add(coursesDTO);
 			}
 		}
-		
-		List<String> imageList=	coursesDTOList.stream().map(p->p.getImg()).collect(Collectors.toList()); 
+
+		List<String> imageList = coursesDTOList.stream().map(p -> p.getImg()).collect(Collectors.toList());
 		System.out.println(imageList);
-		coursesDTOList.stream().map(p->p.getImg()).forEach(p ->System.out.println(p));
+		coursesDTOList.stream().map(p -> p.getImg()).forEach(p -> System.out.println(p));
 		return new ApiResponse(HttpStatus.OK, SUCCESS, coursesDTOList);
 	}
 

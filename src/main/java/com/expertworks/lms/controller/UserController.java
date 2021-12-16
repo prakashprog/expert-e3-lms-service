@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,21 +29,21 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.view.RedirectView;
 
+import com.expertworks.lms.enums.ExpertRole;
 import com.expertworks.lms.http.ApiResponse;
 import com.expertworks.lms.http.EmailDTO;
 import com.expertworks.lms.http.TransferDTO;
 import com.expertworks.lms.http.UserDTO;
-import com.expertworks.lms.model.Acl;
 import com.expertworks.lms.model.Group;
 import com.expertworks.lms.model.Partner;
 import com.expertworks.lms.model.Team;
 import com.expertworks.lms.model.User;
-import com.expertworks.lms.repository.AclRepository;
 import com.expertworks.lms.repository.GroupRepository;
 import com.expertworks.lms.repository.PartnerRepository;
 import com.expertworks.lms.repository.TeamRepository;
 import com.expertworks.lms.repository.UserRepository;
 import com.expertworks.lms.service.EmailService;
+import com.expertworks.lms.service.TeamCoursesService;
 import com.expertworks.lms.service.TeamService;
 import com.expertworks.lms.util.TokenUtil;
 
@@ -57,10 +56,10 @@ public class UserController {
 	private final static Logger logger = LoggerFactory.getLogger(UserController.class);
 
 	public static final String SUCCESS = "success";
-	public static final String ROLE_ADMIN = "ROLE_ADMIN";
-	public static final String ROLE_USER = "ROLE_USER";
-	public static final String ROLE_PUBUSER = "ROLE_PUBUSER";
-	public static final String ROLE_SUPERADMIN = "ROLE_SUPERADMIN";
+//	public static final String ROLE_ADMIN = "ROLE_ADMIN";
+//	public static final String ROLE_USER = "ROLE_USER";
+//	public static final String ROLE_PUBUSER = "ROLE_PUBUSER";
+//	public static final String ROLE_SUPERADMIN = "ROLE_SUPERADMIN";
 	public static final String ACTION_DELETE = "DELETE";
 	public static final String TEAM_B2C = "TEAM_B2C";
 
@@ -78,24 +77,33 @@ public class UserController {
 
 	@Autowired
 	private TeamRepository teamRepository;
-	
+
 	@Autowired
 	private TeamService teamService;
 
 	@Autowired
 	private PartnerRepository partnerRepository;
-	
-	@Autowired
-	private AclRepository aclRepository;
+
 
 	@Autowired
 	TokenUtil tokenUtil;
+
+
+
+
+	@Autowired
+	private TeamCoursesService teamCoursesService;
 
 	@Value("${email.verify.sucessurl}")
 	private String emailSuccess;
 
 	@Value("${email.verify.failureurl}")
 	private String emailFailed;
+
+	@GetMapping("/")
+	public String home() {
+		return "Server is running...";
+	}
 
 	@CrossOrigin
 	@PostMapping("/public/signup")
@@ -108,25 +116,28 @@ public class UserController {
 
 		user.setUserId(user.getEmail());
 		user.setUserName(user.getName());
-		//unique TeamId for each signup 
-		user.setTeamId(TEAM_B2C+"-"+user.getEmail());
+		// unique TeamId for each signup
+		user.setTeamId(TEAM_B2C + "-" + user.getEmail());
 		user.setStatus(USER_NOTVERIFIED);
-		user.setUserRole(ROLE_PUBUSER);
+		user.setUserRole(ExpertRole.ROLE_PUBUSER);
 		user.setEnabled(false);// By default user is disabled
 		user.setStatus(USER_NOTVERIFIED);
 		savedUser = userRepository.save(user);
 
-		/*emailService.sendEmailVerification(user.getEmail(), StringUtils.capitalize(user.getName()), user.getUserId(),
-				savedUser.getVcode());*/
-		
-		EmailDTO email= new EmailDTO();
-				email.to=user.getEmail();
-				email.username=StringUtils.capitalize(user.getName());
-				email.loginId=user.getUserId();
-				email.verificationKey=savedUser.getVcode();
-		
+		/*
+		 * emailService.sendEmailVerification(user.getEmail(),
+		 * StringUtils.capitalize(user.getName()), user.getUserId(),
+		 * savedUser.getVcode());
+		 */
+
+		EmailDTO email = new EmailDTO();
+		email.to = user.getEmail();
+		email.username = StringUtils.capitalize(user.getName());
+		email.loginId = user.getUserId();
+		email.verificationKey = savedUser.getVcode();
+
 		emailService.sendEmailVerificationv1(email);
-		
+
 		return new ApiResponse(HttpStatus.OK, SUCCESS, savedUser);
 	}
 
@@ -197,6 +208,8 @@ public class UserController {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userRole is missing");
 		// List<Team> teamList = teamRepository.get(teamId); // check for team exists
 		// Team team = teamList.get(0);
+		checkforDuplicateUser(user.getEmail());
+
 		Team team = teamRepository.load(teamId, "details");
 
 		if (team == null)
@@ -228,7 +241,7 @@ public class UserController {
 		user.setPartnerId(partner.getPartnerId());
 		user.setUserLimit(String.valueOf(userLimitDB));
 
-		if (user.getUserRole() != null && user.getUserRole().equalsIgnoreCase(ROLE_ADMIN)) {
+		if (user.getUserRole() != null && user.getUserRole()==ExpertRole.ROLE_ADMIN) {
 			user.setPassword("admin");// default password
 		} else {
 			String randompwd = this.getRandomPassword(4);
@@ -238,24 +251,20 @@ public class UserController {
 		teamRepository.addUserToTeam(team.getTeamId(), savedUser);
 //		emailService.sendCredentailsMessagev1(user.getEmail(), StringUtils.capitalize(user.getName()), user.getUserId(),
 //				user.getPassword());
-	
+
 		EmailDTO email = new EmailDTO();
-		email.to=user.getEmail();
-		email.username= StringUtils.capitalize(user.getName());
-		email.loginId=user.getUserId();
-		email.password=user.getPassword();
+		email.to = user.getEmail();
+		email.username = StringUtils.capitalize(user.getName());
+		email.loginId = user.getUserId();
+		email.password = user.getPassword();
 		emailService.sendCredentailsMessagev1(email);
 
 		return new ApiResponse(HttpStatus.OK, SUCCESS, savedUser);
 
 	}
-	
-	
-	
-	
 
 	/*
-	 * Adding user under the Group(only Admin Users)
+	 * Adding user under the Group(only Administration(admin) Users)
 	 */
 	@CrossOrigin
 	@PostMapping("/user")
@@ -269,10 +278,12 @@ public class UserController {
 		user.setTeamId(teamId);
 		if (user.getUserRole() == null)
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userRole is missing");
-		if (user.getUserRole() != null && user.getUserRole().equalsIgnoreCase(ROLE_ADMIN)) {
+
+		checkforDuplicateUser(user.getEmail());
+		if (user.getUserRole() != null && user.getUserRole()==ExpertRole.ROLE_ADMIN) {
 			Team adminTeam = teamService.createOrGetAdminTeam(groupId);
 			teamId = adminTeam.getTeamId();
-			System.out.println("createUser  TeamId : "+teamId);
+			System.out.println("createUser  TeamId : " + teamId);
 			user.setTeamId(teamId);
 			user.setTeamType(adminTeam.getTeamType());
 		}
@@ -304,15 +315,18 @@ public class UserController {
 		user.setPartnerId(partner.getPartnerId());
 		user.setUserLimit(String.valueOf(userLimitDB));
 
-		if (user.getUserRole() != null && user.getUserRole().equalsIgnoreCase(ROLE_ADMIN)) {
+		if (user.getUserRole() != null && user.getUserRole()==(ExpertRole.ROLE_ADMIN)) {
 			user.setPassword("admin");// default password
+			teamCoursesService.addAllCourses(teamId);
+
 		} else {
 			String randompwd = this.getRandomPassword(4);
 			user.setPassword(randompwd);
 		}
 		User savedUser = userRepository.save(user);
 		// teamRepository.addUserToTeam(team.getTeamId(), savedUser);
-		EmailDTO email = new EmailDTO(user.getEmail(), StringUtils.capitalize(user.getName()),user.getUserId(),user.getPassword());
+		EmailDTO email = new EmailDTO(user.getEmail(), StringUtils.capitalize(user.getName()), user.getUserId(),
+				user.getPassword());
 		emailService.sendCredentailsMessagev1(email);
 		return new ApiResponse(HttpStatus.OK, SUCCESS, savedUser);
 
@@ -365,14 +379,14 @@ public class UserController {
 			list = userRepository.queryOnGSI("groupId-index", "groupId", groupId);
 		} else
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "RequestParam teamId/groupId required");
-		
-		
+
 		Collections.sort(list, new Comparator<User>() {
-	            public int compare(User u1, User u2) {
-	                // notice the cast to (Integer) to invoke compareTo
-	                return (u2.getCreatedDate()).compareTo(u1.getCreatedDate());
-	            }
-	        });
+			@Override
+			public int compare(User u1, User u2) {
+				// notice the cast to (Integer) to invoke compareTo
+				return (u2.getCreatedDate()).compareTo(u1.getCreatedDate());
+			}
+		});
 
 		return new ApiResponse(HttpStatus.OK, SUCCESS, list);
 	}
@@ -439,19 +453,8 @@ public class UserController {
 		user.setUserId(userId);
 		return new ApiResponse(HttpStatus.OK, SUCCESS, userRepository.update(userId, user));
 	}
-	
-	@CrossOrigin
-	@GetMapping("/user/{role}/pages")
-	
-	public ApiResponse pagesAcessable(@PathVariable("role") String role) {
-		Acl acl = aclRepository.load(role);
-		System.out.println("acl :  "+acl);
-        if(acl!=null)		
-    	   return new ApiResponse(HttpStatus.OK, SUCCESS, acl);
-        else
-    	   throw new ResponseStatusException(HttpStatus.FORBIDDEN, "role not present/empty");
-    	  
-	}
+
+
 
 	@CrossOrigin
 	@PostMapping("/user/changepwd")
@@ -529,4 +532,10 @@ public class UserController {
 			return new ApiResponse(HttpStatus.OK, SUCCESS, "some response");
 	}
 
+	private void checkforDuplicateUser(String userId) {
+
+		User savedUser = userRepository.load(userId);
+		if (savedUser != null)
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, savedUser.getEmail() + " already exists ");
+	}
 }

@@ -50,14 +50,12 @@ import io.jsonwebtoken.Claims;
 public class CoursesController {
 
 	public static final String SUCCESS = "success";
-	
-	
+
 	@Value("${aws.cloudfront.distributiondomain}")
 	private String distributiondomain;
-	
+
 	@Value("${aws.cloudfront.protocol}")
 	private String distributionprotocol;
-	
 
 	@Autowired
 	private CoursesRepository coursesRepository;
@@ -67,7 +65,7 @@ public class CoursesController {
 
 	@Autowired
 	private JwtUtil jwtUtil;
-	
+
 	@Autowired
 	private HttpServletRequest request;
 
@@ -75,50 +73,49 @@ public class CoursesController {
 	@PostMapping("/courses")
 	@CrossOrigin
 	public Courses saveCourses(@RequestBody Courses courses) {
-		//return coursesRepository.save(courses);
+		// return coursesRepository.save(courses);
 		return courses;
 	}
 
 	// get all courses
-	
+
 	@GetMapping("/courses")
 	@CrossOrigin
 	public ApiResponse getCourses() {
-		
+
 		System.out.println("Request Recievd in getCourses");
 		List<Courses> courseList = coursesRepository.getAllCourses();
-		
-		for (Courses courses :courseList)
-		{	if(NumberUtils.isCreatable(courses.getPrice()) && NumberUtils.isCreatable(courses.getActualPrice()))
-			courses.setCurrencies(
-					CurrencyUtil.getCurrencies(Double.parseDouble(courses.getPrice()),Double.parseDouble(courses.getActualPrice())));
+
+		for (Courses courses : courseList) {
+			if (NumberUtils.isCreatable(courses.getPrice()) && NumberUtils.isCreatable(courses.getActualPrice()))
+				courses.setCurrencies(CurrencyUtil.getCurrencies(Double.parseDouble(courses.getPrice()),
+						Double.parseDouble(courses.getActualPrice())));
 
 		}
-		
+
 		return new ApiResponse(HttpStatus.OK, SUCCESS, courseList);
 	}
 
 	// get all courses
-	//@LogExecutionTime
+	// @LogExecutionTime
 	@GetMapping("/public/courses")
 	@CrossOrigin
 	public ApiResponse getallCourses() {
 
 		List<Courses> courseList = coursesRepository.getAllCourses();
-		System.out.println("request.getRemoteAddr() :  "+ request.getRemoteAddr());
-		for (Courses courses :courseList)
-		{	if(NumberUtils.isCreatable(courses.getPrice()))
-			if(NumberUtils.isCreatable(courses.getPrice()) && NumberUtils.isCreatable(courses.getActualPrice()))
-				courses.setCurrencies(
-						CurrencyUtil.getCurrencies(Double.parseDouble(courses.getPrice()),Double.parseDouble(courses.getActualPrice())));
+		System.out.println("request.getRemoteAddr() :  " + request.getRemoteAddr());
+		for (Courses courses : courseList) {
+			if (NumberUtils.isCreatable(courses.getPrice()))
+				if (NumberUtils.isCreatable(courses.getPrice()) && NumberUtils.isCreatable(courses.getActualPrice()))
+					courses.setCurrencies(CurrencyUtil.getCurrencies(Double.parseDouble(courses.getPrice()),
+							Double.parseDouble(courses.getActualPrice())));
 
 		}
-		
+
 		return new ApiResponse(HttpStatus.OK, SUCCESS, courseList);
 	}
 
-	
-	//@LogExecutionTime
+	// @LogExecutionTime
 	@GetMapping("/courses/{courseId}")
 	@CrossOrigin
 	public ApiResponse getCourses(@PathVariable("courseId") String courseId) {
@@ -164,11 +161,11 @@ public class CoursesController {
 		return new ApiResponse(HttpStatus.OK, SUCCESS, courseDTOList);
 	}
 
-	//@LogExecutionTime
+	// @LogExecutionTime
 	@GetMapping("/tmp/courses/{courseId}")
 	@CrossOrigin
 	public ApiResponse gettmpCourses(@PathVariable("courseId") String courseId) {
-		
+
 		System.out.println("Request recived in gettmpCourses");
 
 		System.out.println(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
@@ -209,39 +206,28 @@ public class CoursesController {
 		System.out.println("teamId : " + teamId);
 		System.out.println("sub : " + userId);
 
-		//List<Courses> coursesMetaList = coursesRepository.getCoursesMetaDetails(courseId);
-		//Courses courselevelData = coursesMetaList.get(0);
+		// List<Courses> coursesMetaList =
+		// coursesRepository.getCoursesMetaDetails(courseId);
+		// Courses courselevelData = coursesMetaList.get(0);
 		Courses courselevelData = coursesRepository.getCoursesMetaDetails(courseId);
-		
+
 		String s3folder = courselevelData.getS3folder();
-		System.out.println("s3folder : "  + s3folder);
-		
+		System.out.println("s3folder : " + s3folder);
+
 		// get all rows start with S#
 		List<Courses> secList = coursesRepository.getCourseSections(courseId);
 		List<CoursesDTO> secDTOList = new ArrayList();
-		
+
 		for (Courses section : secList) {
 			CoursesDTO courseDTO = section.toCourseDTO();
-			List videosList = courseDTO.getVideoLinks().stream().map(v-> {
-				v.getResourceLinks();
-				for(ResourceLinkDTO resourceLinkDTO : v.getResourceLinks()) {
-					String link = resourceLinkDTO.getLink();
-					String basepath = s3folder.substring(0,s3folder.indexOf("/videos"));
-					resourceLinkDTO.setLink(distributionprotocol+"://"+distributiondomain+"/"+basepath+"/docs/"+link);
-				}	
-				
-				return v;
-			}).collect(Collectors.toList());
+			List videosList = addAbsolutePathtoResources(courseDTO.getVideoLinks(), s3folder);
 			courseDTO.setVideoLinks(videosList);
 			secDTOList.add(courseDTO);
 		}
-
 		Collections.sort(secDTOList);
-		
-		
-		//888
 
-	
+		// 888
+
 		/**
 		 * -----to get percentage of course completed---userId and start with
 		 * C#courseId------
@@ -267,7 +253,6 @@ public class CoursesController {
 		}
 		/** ------------to get percentage of course completed---------------------/ **/
 
-		
 		CoursesDetailsDTO coursesDetailsDTO = new CoursesDetailsDTO();
 		coursesDetailsDTO.setSections(secDTOList);
 		coursesDetailsDTO.setPercentage(percentage);
@@ -275,22 +260,42 @@ public class CoursesController {
 		coursesDetailsDTO.setType(courselevelData.getType());
 		coursesDetailsDTO.setCourseId(courseId);
 		coursesDetailsDTO.setDescription(courselevelData.getDescription());
-		coursesDetailsDTO.setLeveldesc(courselevelData.getLeveldesc());  
+		coursesDetailsDTO.setLeveldesc(courselevelData.getLeveldesc());
 		coursesDetailsDTO.setIncludes(courselevelData.getIncludes());
 		coursesDetailsDTO.setOrder(courselevelData.getOrder());
 		coursesDetailsDTO.setHours(courselevelData.getHours());
 		coursesDetailsDTO.setRating(courselevelData.getRating());
 		coursesDetailsDTO.setReviews(courselevelData.getReviews());
 		coursesDetailsDTO.setActualPrice(courselevelData.getActualPrice());
-		coursesDetailsDTO.setPrice(courselevelData.getPrice());  
-		
-		System.out.println("NumberUtils.isCreatable ; "+NumberUtils.isCreatable(courselevelData.getPrice()));
-		if(NumberUtils.isCreatable(courselevelData.getPrice()))
-		{
-			coursesDetailsDTO.setCurrencies(CurrencyUtil.getCurrencies(Double.parseDouble(courselevelData.getPrice()),Double.parseDouble(courselevelData.getActualPrice())));
-		}
+		coursesDetailsDTO.setPrice(courselevelData.getPrice());
 
+		System.out.println("NumberUtils.isCreatable ; " + NumberUtils.isCreatable(courselevelData.getPrice()));
+		if (NumberUtils.isCreatable(courselevelData.getPrice())) {
+			coursesDetailsDTO.setCurrencies(CurrencyUtil.getCurrencies(Double.parseDouble(courselevelData.getPrice()),
+					Double.parseDouble(courselevelData.getActualPrice())));
+		}
 		return new ApiResponse(HttpStatus.OK, SUCCESS, coursesDetailsDTO);
+	}
+
+	/**
+	 *
+	 * @param videoLinks
+	 * @param s3folder
+	 * @return
+	 */
+	public List addAbsolutePathtoResources(List<VideoLinkDTO> videoLinks, String s3folder) {
+
+		List videosList = videoLinks.stream().map(v -> {
+			v.getResourceLinks();
+			for (ResourceLinkDTO resourceLinkDTO : v.getResourceLinks()) {
+				String link = resourceLinkDTO.getLink();
+				String basepath = s3folder.substring(0, s3folder.indexOf("/videos"));
+				resourceLinkDTO
+						.setLink(distributionprotocol + "://" + distributiondomain + "/" + basepath + "/docs/" + link);
+			}
+			return v;
+		}).collect(Collectors.toList());
+		return videosList;
 	}
 
 	@CrossOrigin
@@ -330,24 +335,15 @@ public class CoursesController {
 		}
 
 		Collections.sort(courseDTOList);
-		//List<Courses> coursesMetaList = coursesRepository.getCoursesMetaDetails(courseId);
+		// List<Courses> coursesMetaList =
+		// coursesRepository.getCoursesMetaDetails(courseId);
 		Courses courselevel = coursesRepository.getCoursesMetaDetails(courseId);
 		String s3folder = courselevel.getS3folder();
-		System.out.println("s3folder : "  + s3folder);
-		
+		System.out.println("s3folder : " + s3folder);
+
 		for (CoursesDTO section : courseDTOList) {
 
-			List<VideoLinkDTO> videolinkList = section.getVideoLinks();
-
-			videolinkList = videolinkList.stream().map(v -> {				
-				String url = v.getUrl();
-				System.out.println("url : " + url);
-				String fileName = url.substring(url.lastIndexOf('/') + 1, url.length());
-				System.out.println("fileName : " + fileName);
-				v.setUrl(distributionprotocol+"://"+distributiondomain+"/"+s3folder+"/"+fileName);
-				return v;
-			}).collect(Collectors.toList());
-
+			List<VideoLinkDTO> videolinkList = addAbsolutePathtoResources(section.getVideoLinks(), s3folder);
 			if (section == courseDTOList.get(0) || section == courseDTOList.get(1) || section == courseDTOList.get(2)) {
 
 				for (int i = 0; i < videolinkList.size(); i++) {
@@ -362,7 +358,7 @@ public class CoursesController {
 					videoLink.setUrl(null);
 
 		}
-	
+
 		System.out.println("getS3folder  : " + courselevel.getS3folder());
 		CoursesDetailsDTO coursesDetailsDTO = new CoursesDetailsDTO();
 		coursesDetailsDTO.setSections(courseDTOList);
@@ -373,19 +369,18 @@ public class CoursesController {
 		coursesDetailsDTO.setLeveldesc(courselevel.getLeveldesc());
 		coursesDetailsDTO.setIncludes(courselevel.getIncludes());
 		coursesDetailsDTO.setOrder(courselevel.getOrder());
-		
+
 		coursesDetailsDTO.setHours(courselevel.getHours());
 		coursesDetailsDTO.setRating(courselevel.getRating());
 		coursesDetailsDTO.setReviews(courselevel.getReviews());
-		
-		
+
 		coursesDetailsDTO.setActualPrice(courselevel.getActualPrice());
 		coursesDetailsDTO.setPrice(courselevel.getPrice());
-		
-		//coursesDetailsDTO.setCurrencies(courselevel.getCurrencies());
-		if(NumberUtils.isCreatable(courselevel.getPrice()) && NumberUtils.isCreatable(courselevel.getActualPrice()))
-		coursesDetailsDTO.setCurrencies(
-				CurrencyUtil.getCurrencies(Double.parseDouble(courselevel.getPrice()),Double.parseDouble(courselevel.getActualPrice())));
+
+		// coursesDetailsDTO.setCurrencies(courselevel.getCurrencies());
+		if (NumberUtils.isCreatable(courselevel.getPrice()) && NumberUtils.isCreatable(courselevel.getActualPrice()))
+			coursesDetailsDTO.setCurrencies(CurrencyUtil.getCurrencies(Double.parseDouble(courselevel.getPrice()),
+					Double.parseDouble(courselevel.getActualPrice())));
 
 		return new ApiResponse(HttpStatus.OK, SUCCESS, coursesDetailsDTO);
 	}
@@ -409,41 +404,37 @@ public class CoursesController {
 	public String updateCourse(@PathVariable("courseId") String courseId, @RequestBody Courses courses) {
 		return coursesRepository.update(courseId, courses);
 	}
-	
-	
+
 	@CrossOrigin
 	@GetMapping("/courses/meta/{courseId}/{sk}")
-	public ApiResponse getRow(@PathVariable("courseId") String courseId,@PathVariable("sk") String sk) {
+	public ApiResponse getRow(@PathVariable("courseId") String courseId, @PathVariable("sk") String sk) {
 		System.out.println("row : ");
-		Courses row = coursesRepository.getRow(courseId,"S#"+sk);
-		System.out.println("row : "+ row);
-		
+		Courses row = coursesRepository.getRow(courseId, "S#" + sk);
+		System.out.println("row : " + row);
+
 		ResourceLink resourceLink = new ResourceLink();
 		resourceLink.setLink("content.pdf");
 		resourceLink.setTitle("Course Content");
 		resourceLink.setType("pdf");
-		
+
 		List<ResourceLink> list = new ArrayList<ResourceLink>();
 		list.add(resourceLink);
-		
+
 		row.getVideoLinks().get(0).setResourceLinks(list);
-		
-		 coursesRepository.update(row.getCourseId(),row);
-		
+
+		coursesRepository.update(row.getCourseId(), row);
+
 		return new ApiResponse(HttpStatus.OK, SUCCESS, row);
 	}
-	
-	
+
 	@CrossOrigin
 	@GetMapping("/getremoteip")
 	public ApiResponse getRemoteAddr() {
-			
+
 		Map map = new HashMap();
 		map.put("request.getRemoteAddr()", request.getRemoteAddr());
 		map.put("request.getRemoteHost()", request.getRemoteHost());
 		return new ApiResponse(HttpStatus.OK, SUCCESS, map);
 	}
-	
-	
 
 }

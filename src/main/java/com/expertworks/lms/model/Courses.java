@@ -38,13 +38,13 @@ public class Courses implements Comparable<Courses> {
 
 	@DynamoDBAttribute
 	private String img;
-	
+
 	@DynamoDBAttribute
 	private String description;
-	
+
 	@DynamoDBAttribute
 	private String leveldesc;
-	
+
 	@DynamoDBAttribute
 	private List<String> includes;
 
@@ -63,31 +63,33 @@ public class Courses implements Comparable<Courses> {
 
 	@DynamoDBAttribute
 	private String level;
-	
+
 	@DynamoDBAttribute
 	private String order;
 
 	@DynamoDBAttribute
 	private String price;
-	
-	
+
+
 	private List<CurrencyDTO> currencies;
-	
+
 	@DynamoDBAttribute
 	private String hours;
 
 	@DynamoDBAttribute
 	private String rating;
-	
+
 	@DynamoDBAttribute
 	private String reviews;
-	
+
 	@DynamoDBAttribute
 	private String actualPrice;
-	
-	
-		
-	
+
+	@DynamoDBAttribute
+	private String status;
+
+
+	@Override
 	public int compareTo(Courses courses) {
 		return sk.compareTo(courses.sk);
 
@@ -195,7 +197,8 @@ public class Courses implements Comparable<Courses> {
 		coursesDTO.setHours(this.hours);
 		coursesDTO.setReviews(this.reviews);
 		coursesDTO.setRating(this.rating);
-		
+		coursesDTO.setStatus(this.status);
+
 		if(NumberUtils.isCreatable(coursesDTO.getPrice()) && NumberUtils.isCreatable(coursesDTO.getActualPrice()))
 			coursesDTO.setCurrencies(
 					CurrencyUtil.getCurrencies(Double.parseDouble(coursesDTO.getPrice()),Double.parseDouble(coursesDTO.getActualPrice())));
@@ -300,7 +303,7 @@ public class Courses implements Comparable<Courses> {
 	public void setOrder(String order) {
 		this.order = order;
 	}
-	
+
 	@Override
 	public String toString() {
 	     StandardToStringStyle style = new StandardToStringStyle();
@@ -358,6 +361,14 @@ public class Courses implements Comparable<Courses> {
 
 	public void setCurrencies(List<CurrencyDTO> currencies) {
 		this.currencies = currencies;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 

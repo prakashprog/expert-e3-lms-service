@@ -22,16 +22,16 @@ import org.springframework.web.cors.CorsConfigurationSource;
 @Configuration
 @EnableResourceServer
 public class ProjectConfig extends ResourceServerConfigurerAdapter {
-	
+
     @Value("${jwt.client.id}")
     private String clientId;
-    
-    @Value("${jwt.client.secret}")  
+
+    @Value("${jwt.client.secret}")
     private String secret;
-    
+
     @Value("${jwt.checktoken.endpoint}")
     private String checkTokenEndPoint;
-    
+
     @Value("${jwt.secret}")
     private String signingKey;
 
@@ -53,10 +53,11 @@ public class ProjectConfig extends ResourceServerConfigurerAdapter {
     public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
         resources.tokenStore(tokenStore());
     }
-    
+
     @Override
     public void configure(HttpSecurity http) throws Exception {
     	 http.csrf().disable().authorizeRequests().antMatchers(
+    			 "/",
     			 "/getremoteip",
     			 "/public/signup/*/*",
     			 "/public/signup",
@@ -73,8 +74,8 @@ public class ProjectConfig extends ResourceServerConfigurerAdapter {
          .permitAll().anyRequest().authenticated()
          .and().exceptionHandling().and().sessionManagement()
          .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-    	
-    	 
+
+
     	  http.cors().configurationSource(new CorsConfigurationSource() {
               @Override
               public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
@@ -82,7 +83,7 @@ public class ProjectConfig extends ResourceServerConfigurerAdapter {
               }
           });
     }
-    
+
     @Bean
     @Primary
     public ResourceServerTokenServices tokenService() {
@@ -90,11 +91,11 @@ public class ProjectConfig extends ResourceServerConfigurerAdapter {
         tokenServices.setClientId(clientId);
         tokenServices.setClientSecret(secret);
         tokenServices.setCheckTokenEndpointUrl(checkTokenEndPoint);
-     
+
         return tokenServices;
     }
-    
-    
+
+
 //    @Bean
 //    @Primary
 //    public ResourceServerTokenServices tokenServices() {
@@ -104,16 +105,16 @@ public class ProjectConfig extends ResourceServerConfigurerAdapter {
 //        return defaultTokenServices;
 //    }
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
 }

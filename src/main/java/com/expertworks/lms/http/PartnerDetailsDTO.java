@@ -8,7 +8,7 @@ import com.expertworks.lms.model.Partner;
 import com.expertworks.lms.model.Team;
 import com.expertworks.lms.model.TeamCourses;
 
-public class DeletedCoursesDTO {
+public class PartnerDetailsDTO {
 
 
 	private String partnerId;

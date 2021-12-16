@@ -23,14 +23,12 @@ import org.springframework.web.server.ResponseStatusException;
 import com.expertworks.lms.http.ApiResponse;
 import com.expertworks.lms.http.SelectedCourseDTO;
 import com.expertworks.lms.http.TeamDTO;
-import com.expertworks.lms.model.Courses;
 import com.expertworks.lms.model.Team;
 import com.expertworks.lms.model.TeamCourses;
 import com.expertworks.lms.model.User;
-import com.expertworks.lms.repository.CoursesRepository;
-import com.expertworks.lms.repository.GroupRepository;
 import com.expertworks.lms.repository.TeamCoursesRepository;
 import com.expertworks.lms.repository.TeamRepository;
+import com.expertworks.lms.service.TeamCoursesService;
 
 @RestController
 @Component
@@ -44,24 +42,23 @@ public class TeamController {
 	private TeamRepository teamRepository;
 
 	@Autowired
-	private GroupRepository groupRepository;
-
-	@Autowired
 	private TeamCoursesRepository teamCoursesRepository;
 
 	@Autowired
-	private CoursesRepository coursesRepository;
+	private TeamCoursesService teamCoursesService;
 
 	@CrossOrigin
 	@PostMapping("/team/{groupId}")
 	// createTeam under the Group
 	public ApiResponse create(@PathVariable("groupId") String groupId, @RequestBody Team team) {
 
-		logger.info("Creating Team Under groupId :" +  groupId);
+		logger.info("Creating Team Under groupId :" + groupId);
 		team.setSk("details");
 		team.setGroupId(groupId);
 		List<SelectedCourseDTO> selectedCourseDTOList = team.getSelectedCourses();
 		logger.info("coursesDTO size : " + selectedCourseDTOList);
+        //Every Team should be unique Name
+		checkIfTeamNameExists(groupId,team.getName());
 		Team savedTeam = teamRepository.save(team);
 
 		// Adding the Courses to The TeamCourses
@@ -72,7 +69,7 @@ public class TeamController {
 					logger.info("TeamCourses adding TeamId '" + savedTeam.getTeamId() + "': CourseId : " + courseId);
 					teamCoursesRepository.save(new TeamCourses(savedTeam.getTeamId(), courseId));
 				} else {
-					this.addAllCourses(savedTeam.getTeamId());
+					teamCoursesService.addAllCourses(savedTeam.getTeamId());
 				}
 
 			}
@@ -92,20 +89,6 @@ public class TeamController {
 //		groupRepository.addTeamToGroup(group.getGroupId(), savedTeam);
 		return new ApiResponse(HttpStatus.OK, SUCCESS, savedTeam);
 	}
-	
-	
-	
-	
-	private void addAllCourses(String teamId) {
-		
-		List<Courses> allCourseList = coursesRepository.getAllCourses();
-		for (Courses courses : allCourseList) {
-			String courseId = courses.getCourseId();
-			logger.info("TeamCourses adding TeamId '" + teamId + "': ,CourseId : " + courseId);
-			teamCoursesRepository.save(new TeamCourses(teamId, courseId));
-		}
-		
-	}
 
 	@CrossOrigin
 	@GetMapping("/team")
@@ -118,6 +101,7 @@ public class TeamController {
 			list = teamRepository.queryOnGSI("groupId-index", "groupId", groupId);
 
 		Collections.sort(list, new Comparator<Team>() {
+			@Override
 			public int compare(Team t1, Team t2) {
 				// notice the cast to (Integer) to invoke compareTo
 				return (t2.getCreatedDate()).compareTo(t1.getCreatedDate());
@@ -161,84 +145,66 @@ public class TeamController {
 	@CrossOrigin
 	@DeleteMapping("/team/{teamId}")
 	public String delete(@PathVariable("teamId") String teamId) {
-		return teamRepository.delete(teamId,"details");
+		return teamRepository.delete(teamId, "details");
 	}
 
 	@CrossOrigin
 	@PutMapping("/team/{teamId}")
 	public void update(@PathVariable("TeamId") String TeamId, @RequestBody Team Team) {
-		 teamRepository.update(TeamId, Team);
+		teamRepository.update(TeamId, Team);
 	}
-	
 
 	@CrossOrigin
 	@PostMapping("/team/delete")
 	public ApiResponse delete(@RequestBody Team team) throws Exception {
 
 		String teamId = team.getTeamId();
-	
-		logger.info("Deleting Team  :" +  teamId);
-		if(team.getTeamId()==null)
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Team with teamId : "+ teamId + ", not found");
-		Team teaminDB = teamRepository.load(teamId,"details");
-		if(teaminDB==null)
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Team with teamId : "+ teamId + ", not found in DB");
-	
-		return new ApiResponse(HttpStatus.OK, SUCCESS, teamRepository.delete(teamId,"details"));
+
+		logger.info("Deleting Team  :" + teamId);
+		if (team.getTeamId() == null)
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Team with teamId : " + teamId + ", not found");
+		Team teaminDB = teamRepository.load(teamId, "details");
+		if (teaminDB == null)
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+					"Team with teamId : " + teamId + ", not found in DB");
+
+		return new ApiResponse(HttpStatus.OK, SUCCESS, teamRepository.delete(teamId, "details"));
 	}
-	
+
 	@CrossOrigin
 	@PostMapping("/team/update")
 	public ApiResponse update(@RequestBody Team team) {
-		
+
 		String teamId = team.getTeamId();
-		if(team.getTeamId()==null)
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Team with teamId : "+ teamId + ", not found");
-			
+		if (team.getTeamId() == null)
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Team with teamId : " + teamId + ", not found");
+
 		Team teaminDB = teamRepository.load(team.getTeamId(), "details");
-		if(teaminDB==null)
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Team with teamId : "+team.getTeamId()  + ", not found");
-		logger.info("Updating Team  :" +  team.getTeamId());
+		if (teaminDB == null)
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+					"Team with teamId : " + team.getTeamId() + ", not found");
+		logger.info("Updating Team  :" + team.getTeamId());
 		team.setSk("details");
 		teamRepository.update(team.getTeamId(), team);
-		
-		this.deleteTeamCourses(team.getTeamId(),teaminDB.getSelectedCourses());
-		
-		this.addTeamCourses(team.getTeamId(),team.getSelectedCourses());
-		
+
+		teamCoursesService.deleteTeamCourses(team.getTeamId(), teaminDB.getSelectedCourses());
+
+		teamCoursesService.addTeamCourses(team.getTeamId(), team.getSelectedCourses());
+
 		return new ApiResponse(HttpStatus.OK, SUCCESS, teamRepository.load(team.getTeamId(), "details"));
-		
-	}
-	
-	
-	private void addTeamCourses(String teamId, List<SelectedCourseDTO> selectedCourseDTOList)
-	{
-	// Adding the Courses to The TeamCourses
-			if (selectedCourseDTOList != null) {
-				for (SelectedCourseDTO selectedCourseDTO : selectedCourseDTOList) {
-					String courseId = selectedCourseDTO.getCourseId();
-					if (!courseId.equalsIgnoreCase("ALL")) {
-						logger.info("TeamCourses adding TeamId '" + teamId + "': CourseId : " + courseId);
-						teamCoursesRepository.save(new TeamCourses(teamId, courseId));
-					} else {
-						this.addAllCourses(teamId);
-					}
 
-				}
-			}
 	}
-	
-	private void deleteTeamCourses(String teamId, List<SelectedCourseDTO> selectedCourseDTOList)
-	{
-		if (selectedCourseDTOList != null) {
-			for (SelectedCourseDTO selectedCourseDTO : selectedCourseDTOList) {
-				String courseId = selectedCourseDTO.getCourseId();
-					teamCoursesRepository.delete(teamId,courseId);
-					logger.info("TeamCourses Deleting TeamId '" + teamId + "': CourseId : " + courseId);
-					
-				}
 
-			}
+	//Team should be unique Name in an Group
+	public void checkIfTeamNameExists(String groupId, String teamName) {
+
+		List<Team> teams = teamRepository.queryOnGSI("groupId-index", "groupId", groupId);
+
+		for (Team team : teams) {
+			if (team.getName().endsWith(teamName))
+				throw new ResponseStatusException(HttpStatus.FORBIDDEN, team.getName() + " already exists");
+
 		}
 
 	}
+}

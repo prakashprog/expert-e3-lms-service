@@ -26,14 +26,14 @@ import com.paypal.base.rest.PayPalRESTException;
 //https://www.sourcecodeexamples.net/2021/01/spring-boot-paypal-payment-gateway.html
 @RestController
 public class LMSPaypalController {
-	
-	
+
+
 	@Autowired
 	private EnvUtil envUtil;
 
 	@Autowired
 	PaypalService service;
-	
+
 
 	public static String SUCCESS_REDIRECT_URL = "https://www.expert-works.com/";
 	public static String CANCEL_REDIRECT_URL = "https://www.expert-works.com/cancel";
@@ -41,16 +41,12 @@ public class LMSPaypalController {
 	public static final String SUCCESS_URL = "pay/success";
 	public static final String CANCEL_URL = "pay/cancel";
 
-	@GetMapping("/")
-	public String home() {
-		return "home";
-	}
 
 	@CrossOrigin
 	@PostMapping("/pay")
 	public String payment(@RequestBody PayPalOrder order) {
-		
-		
+
+
 
 		try {
 			Payment payment = service.createPayment(order.getPrice(), order.getCurrency(), order.getMethod(),
@@ -64,21 +60,21 @@ public class LMSPaypalController {
 			}
 
 		} catch (PayPalRESTException e) {
-			
-			
+
+
 
 			e.printStackTrace();
 		}
 		return "redirect:/";
 	}
-	
-	
-	
-	
+
+
+
+
 	@CrossOrigin
 	@PostMapping("/payredirect")
 	public RedirectView paymentRedirect(@RequestBody PayPalOrder order) {
-		
+
 		RedirectView redirectView = new RedirectView();
 
 		try {
@@ -95,30 +91,30 @@ public class LMSPaypalController {
 
 		} catch (PayPalRESTException e) {
 			redirectView.setUrl("https://www.expert-works.com/error");
-			
+
 			e.printStackTrace();
 		}
 		return redirectView;
 	}
 
-	
+
 //	@CrossOrigin
 //	@PostMapping("/payurl")
 //	public List<Links> paymenturl(@RequestBody PayPalOrder order) throws Exception {
-//		
+//
 //		List<Links> links = new ArrayList<>();
-//		
+//
 //		System.out.println("HostName : "+envUtil.getHostname());
-//		final String baseUrl = 
+//		final String baseUrl =
 //				ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
 //		System.out.println("baseUrl : "+baseUrl);
-//  
+//
 //		try {
 //			Payment payment = service.createPayment(order.getPrice(), order.getCurrency(), order.getMethod(),
 //					order.getIntent(), order.getDescription(), "http://localhost:9091/" + CANCEL_URL,
 //					"http://localhost:9091/" + SUCCESS_URL);
 //			for (Links link : payment.getLinks()) {
-//				System.out.println("link : " + link.toJSON());  
+//				System.out.println("link : " + link.toJSON());
 //				if (link.getRel().equals("approval_url")) {
 //					links = payment.getLinks();
 //					return payment.getLinks();
@@ -132,29 +128,29 @@ public class LMSPaypalController {
 //		}
 //		return links;
 //	}
-	
-	
+
+
 	@CrossOrigin
 	@PostMapping("/payurl")
 	public Map paymenturl(@RequestBody PayPalOrder order) throws Exception {
-				
+
 		Map map = new HashMap();
 		System.out.println("HostName : "+envUtil.getHostname());
-		final String baseUrl = 
+		final String baseUrl =
 				ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
 		System.out.println("baseUrl : "+baseUrl);
 		String sucessUrl = baseUrl+"/" + SUCCESS_URL;
 		String cancelUrl = baseUrl+"/" + CANCEL_URL;
 		SUCCESS_REDIRECT_URL = order.getSuccessUrl();
 		CANCEL_REDIRECT_URL = order.getCancelUrl();
-  
+
 		try {
 			Payment payment = service.createPayment(order.getPrice(), order.getCurrency(), order.getMethod(),
 					order.getIntent(), order.getDescription(), cancelUrl,
 					sucessUrl);
 			for (Links link : payment.getLinks()) {
 				if (link.getRel().equals("approval_url")) {
-					System.out.println("approval_url link : " + link.toJSON());  
+					System.out.println("approval_url link : " + link.toJSON());
 					map.put("approval_url", link.getHref());
 					map.put("success_api", sucessUrl);
 					map.put("cancel_api", cancelUrl);
@@ -167,10 +163,10 @@ public class LMSPaypalController {
 		} catch (PayPalRESTException e) {
 
 			e.printStackTrace();
-			
+
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
 					e.getMessage().toString());
-			
+
 		}
 		return map;
 	}
@@ -178,7 +174,7 @@ public class LMSPaypalController {
 	@CrossOrigin
 	@GetMapping(value = CANCEL_URL)
 	public RedirectView cancelPay(@RequestParam("token") String token) {
-		
+
 		RedirectView redirectView = new RedirectView();
 		redirectView.setUrl(CANCEL_REDIRECT_URL);
 		return redirectView;
@@ -200,11 +196,11 @@ public class LMSPaypalController {
 //		return "redirect:/";
 //	}
 
-	
+
 	@CrossOrigin
 	@GetMapping(value = SUCCESS_URL)
 	public RedirectView successPay(@RequestParam("paymentId") String paymentId, @RequestParam("PayerID") String payerId) {
-		
+
 		RedirectView redirectView = new RedirectView();
 		redirectView.setUrl(SUCCESS_REDIRECT_URL);
 		try {

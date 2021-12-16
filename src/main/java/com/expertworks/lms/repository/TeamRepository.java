@@ -108,15 +108,17 @@ public class TeamRepository {
 		return "Team with TeamId: " + teamId + " Deleted!";
 	}
 
+
+
 	public void update(String teamId, Team team) {
 
-		
+
 		  DynamoDBMapperConfig dynamoDBMapperConfig = new
 		  DynamoDBMapperConfig.Builder()
 		  .withConsistentReads(DynamoDBMapperConfig.ConsistentReads.CONSISTENT)
 		  .withSaveBehavior(DynamoDBMapperConfig.SaveBehavior.APPEND_SET).build();
 		  dynamoDBMapper.save(team, dynamoDBMapperConfig);
-		 
+
 
 		/*
 		 * Team teaminDB = dynamoDBMapper.load(Team.class, team.getTeamId(),"details");
@@ -125,6 +127,6 @@ public class TeamRepository {
 		 * ExpectedAttributeValue(new AttributeValue().withS(team.getTeamId()))));
 		 */
 
-		
+
 	}
 }

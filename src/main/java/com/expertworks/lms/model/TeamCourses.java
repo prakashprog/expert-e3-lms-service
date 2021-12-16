@@ -1,6 +1,5 @@
 package com.expertworks.lms.model;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
@@ -8,7 +7,6 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBIndexHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBRangeKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
-import com.expertworks.lms.http.CoursesDTO;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @DynamoDBTable(tableName = "TeamCourses")
@@ -47,12 +45,15 @@ public class TeamCourses {
 	@DynamoDBAttribute
 	private String preferences;
 
+	@DynamoDBAttribute
+	private String status;
+
 	public TeamCourses() {
 	}
 
-	
+
 	public TeamCourses(String teamId,String courseId) {
-		
+
 		this.teamId = teamId;
 		this.courseId=courseId;
 	}
@@ -196,6 +197,16 @@ public class TeamCourses {
 	 */
 	public void setImg(String img) {
 		this.img = img;
+	}
+
+
+	public String getStatus() {
+		return status;
+	}
+
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 }

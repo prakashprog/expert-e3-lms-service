@@ -34,7 +34,7 @@ public class PackageController {
 
 	@Autowired
 	private PackageRepository packageRepository;
-	
+
 	@CrossOrigin
 	@PostMapping("/packages")
 	public ApiResponse save(@RequestBody Pack pack) {
@@ -46,14 +46,14 @@ public class PackageController {
 	public ApiResponse getAll() {
 
 		List<Pack> list = packageRepository.getAll();
-		return new ApiResponse(HttpStatus.OK, SUCCESS, list);   
+		return new ApiResponse(HttpStatus.OK, SUCCESS, list);
 	}
 
 	@CrossOrigin
 	@GetMapping("/packages/{packageId}")
 	public ApiResponse getPackage(@PathVariable("packageId") String packageId) {
-		List<Pack> list = packageRepository.get(packageId);
-		return new ApiResponse(HttpStatus.OK, SUCCESS, list);
+	    Pack pack = packageRepository.getPack(packageId);
+		return new ApiResponse(HttpStatus.OK, SUCCESS, pack);
 	}
 
 	@CrossOrigin
@@ -67,10 +67,10 @@ public class PackageController {
 	public String updateCourse(@PathVariable("courseId") String contactId, @RequestBody Contact contact) {
 		return packageRepository.update(contactId, contact);
 	}
-	
-	
-	
-	
-	
+
+
+
+
+
 
 }

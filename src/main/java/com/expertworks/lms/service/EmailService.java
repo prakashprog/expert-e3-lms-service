@@ -26,6 +26,7 @@ import com.amazonaws.services.simpleemail.model.Destination;
 import com.amazonaws.services.simpleemail.model.SendEmailRequest;
 import com.amazonaws.services.simpleemail.model.SendTemplatedEmailRequest;
 import com.expertworks.lms.http.EmailDTO;
+import com.expertworks.lms.http.SendReminderDTO;
 import com.expertworks.lms.model.Contact;
 import com.expertworks.lms.util.CloudTemplateLoader;
 
@@ -351,7 +352,6 @@ public class EmailService {
 				+ "<br><br><br> Thanks,<br> Expert Works Team.</a> ";
 		final String TEXTBODY = "This email was sent from <a href='https://www.expert-works.com'>\"";
 
-		this.converttoHTML(contact);
 		SendEmailRequest request = new SendEmailRequest().withDestination(new Destination().withToAddresses(to))
 				.withMessage(new com.amazonaws.services.simpleemail.model.Message()
 						.withBody(new Body().withHtml(new Content().withCharset("UTF-8").withData(HTMLBODY))
@@ -361,6 +361,50 @@ public class EmailService {
 		client.sendEmail(request);
 
 	}
+
+
+	public void sendRemainderEmail(SendReminderDTO sendReminderDTO) {
+
+		final String FROM = welcomeEmailFrom;
+		//final String to = email.getTo();
+		final String NOT_STARTED = "Hope you’re having a great time! We just observed that you haven’t started your course yet "
+				+ "<br>Hope you will start your course as early as possible! All the best! Never stop learning.";
+		final String IN_PROGRESS = "Hope you’re having a great time learning the course!Hope you will complete the course on time! All the best! Never stop learning. ";
+		final String COMPLETED = "Congratulations for completing the entire course! We hope you had a great time learning the course at your own pace. You can now start implementing your knowledge in real time. ";
+		 String content = "";
+		if(sendReminderDTO.getStatus()==sendReminderDTO.getStatus().NOT_STARTED)
+		{
+			content= NOT_STARTED;
+		}
+		else if(sendReminderDTO.getStatus()==sendReminderDTO.getStatus().IN_PROGRESS)
+		{
+			content= IN_PROGRESS;
+		}
+		else if(sendReminderDTO.getStatus()==sendReminderDTO.getStatus().COMPLETED)
+		{
+			content= COMPLETED;
+		}
+
+		final String[] to = new String[] {sendReminderDTO.getAdminEmail(),sendReminderDTO.getUserEmail()};
+		final String SUBJECT = sendReminderDTO.getCourseName()+" - "+sendReminderDTO.getStatus().toString().replace("_"," ");
+		final String HTMLBODY = "Dear "+sendReminderDTO.getUserName()+","
+				+ "<br><br>" + content+ "<br>"
+				+ "<p>This email was sent from <a href='https://www.expert-works.com'>" + "expert-works.com</a> "
+				+ "<br><br><br> Thanks & Regards,<br>Expert-Works Admin Team.</a> ";
+		final String TEXTBODY = "This email was sent from <a href='https://www.expert-works.com'>\"";
+
+		SendEmailRequest request = new SendEmailRequest().withDestination(new Destination().withToAddresses(to))
+				.withMessage(new com.amazonaws.services.simpleemail.model.Message()
+						.withBody(new Body().withHtml(new Content().withCharset("UTF-8").withData(HTMLBODY))
+								.withText(new Content().withCharset("UTF-8").withData(TEXTBODY)))
+						.withSubject(new Content().withCharset("UTF-8").withData(SUBJECT)))
+				.withSource(FROM);
+		client.sendEmail(request);
+
+	}
+
+
+
 
 	public String converttoHTML(Contact p) {
 

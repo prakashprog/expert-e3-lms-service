@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.expertworks.lms.http.ApiResponse;
-import com.expertworks.lms.http.BaseResponse;
-import com.expertworks.lms.http.BaseResponse.ResponseCode;
 import com.expertworks.lms.http.EmailDTO;
 import com.expertworks.lms.http.SendReminderDTO;
 import com.expertworks.lms.service.EmailService;
@@ -46,14 +44,14 @@ public class EmailController {
 
 	@CrossOrigin
 	@PostMapping("/sendReminder")
-	public BaseResponse sendReminder(@RequestBody SendReminderDTO sendReminderDTO) {
+	public ApiResponse sendReminder(@RequestBody SendReminderDTO sendReminderDTO) {
 		EmailDTO email = new EmailDTO();
 		email.from = sendReminderDTO.getFromEmail();
 		email.to = sendReminderDTO.getUserEmail();
 		//write code to send email with appropriate email template.
-		BaseResponse bs = new BaseResponse();
-		bs.setResponseCode(ResponseCode.SUCCESS);
-		return bs;
+		emailService.sendRemainderEmail(sendReminderDTO);
+		return new ApiResponse(HttpStatus.OK, SUCCESS, sendReminderDTO);
+
 	}
 
 

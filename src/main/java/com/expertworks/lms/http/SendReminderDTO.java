@@ -1,24 +1,26 @@
 package com.expertworks.lms.http;
 
 public class SendReminderDTO {
-	
+
 	private String userEmail;
-	
+
 	private String fromEmail;
-	
-	private Status status; 
-	
+
+	private Status status;
+
 	private String courseName;
-	
+
 	private String courseDetail;
-	
+
 	private String percentageCompleted;
-	
+
 	private String adminEmail;
-	
+
 	private String adminUserId;
-	
-	
+
+	private String userName;
+
+
 	public static enum Status {
 		COMPLETED, IN_PROGRESS, NOT_STARTED;
 	}
@@ -102,6 +104,16 @@ public class SendReminderDTO {
 	public void setAdminUserId(String adminUserId) {
 		this.adminUserId = adminUserId;
 	}
-	
-	
+
+
+	public String getUserName() {
+		return userName;
+	}
+
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
+
 }

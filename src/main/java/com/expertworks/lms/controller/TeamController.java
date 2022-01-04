@@ -3,6 +3,7 @@ package com.expertworks.lms.controller;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,9 +24,11 @@ import org.springframework.web.server.ResponseStatusException;
 import com.expertworks.lms.http.ApiResponse;
 import com.expertworks.lms.http.SelectedCourseDTO;
 import com.expertworks.lms.http.TeamDTO;
+import com.expertworks.lms.model.Group;
 import com.expertworks.lms.model.Team;
 import com.expertworks.lms.model.TeamCourses;
 import com.expertworks.lms.model.User;
+import com.expertworks.lms.repository.GroupRepository;
 import com.expertworks.lms.repository.TeamCoursesRepository;
 import com.expertworks.lms.repository.TeamRepository;
 import com.expertworks.lms.service.TeamCoursesService;
@@ -37,6 +40,7 @@ public class TeamController {
 	private final static Logger logger = LoggerFactory.getLogger(TeamController.class);
 
 	public static final String SUCCESS = "success";
+	public static final String TEAM_ADMIN = "TEAM_ADMIN";
 
 	@Autowired
 	private TeamRepository teamRepository;
@@ -47,6 +51,9 @@ public class TeamController {
 	@Autowired
 	private TeamCoursesService teamCoursesService;
 
+	@Autowired
+	private GroupRepository groupRepository;
+
 	@CrossOrigin
 	@PostMapping("/team/{groupId}")
 	// createTeam under the Group
@@ -55,10 +62,19 @@ public class TeamController {
 		logger.info("Creating Team Under groupId :" + groupId);
 		team.setSk("details");
 		team.setGroupId(groupId);
+		String partnerId = null;
 		List<SelectedCourseDTO> selectedCourseDTOList = team.getSelectedCourses();
 		logger.info("coursesDTO size : " + selectedCourseDTOList);
-        //Every Team should be unique Name
-		checkIfTeamNameExists(groupId,team.getName());
+		// Every Team should be unique Name
+		checkIfTeamNameExists(groupId, team.getName());
+		// start fix
+		Group group = groupRepository.load(groupId, "details");
+		partnerId = group.getPartnerId();
+		team.setPartnerId(partnerId);
+		if (partnerId == null)
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No Partners found for groupId : " + groupId);
+		// group.setPartnerId(partnerId);
+		// end
 		Team savedTeam = teamRepository.save(team);
 
 		// Adding the Courses to The TeamCourses
@@ -66,10 +82,11 @@ public class TeamController {
 			for (SelectedCourseDTO selectedCourseDTO : selectedCourseDTOList) {
 				String courseId = selectedCourseDTO.getCourseId();
 				if (!courseId.equalsIgnoreCase("ALL")) {
-					logger.info("TeamCourses adding TeamId '" + savedTeam.getTeamId() + "': CourseId : " + courseId);
-					teamCoursesRepository.save(new TeamCourses(savedTeam.getTeamId(), courseId));
+					logger.info("TeamCourses adding TeamId '" + savedTeam.getTeamId() + "', CourseId : " + courseId
+							+ ", groupId : " + groupId + ", partnerId : " + partnerId);
+					teamCoursesRepository.save(new TeamCourses(savedTeam.getTeamId(), courseId, groupId, partnerId));
 				} else {
-					teamCoursesService.addAllCourses(savedTeam.getTeamId());
+					teamCoursesService.addAllCourses(savedTeam.getTeamId(), groupId, partnerId);
 				}
 
 			}
@@ -94,13 +111,20 @@ public class TeamController {
 	@GetMapping("/team")
 	public ApiResponse getAll(@RequestParam(required = false, name = "groupId") String groupId) {
 
-		List<Team> list = null;
+		List<Team> teams = null;
 		if (groupId == null || groupId.equalsIgnoreCase(""))
-			list = teamRepository.getAll();
+			teams = teamRepository.getAll();
 		else
-			list = teamRepository.queryOnGSI("groupId-index", "groupId", groupId);
+			teams = teamRepository.queryOnGSI("groupId-index", "groupId", groupId);
 
-		Collections.sort(list, new Comparator<Team>() {
+		teams = teams.stream().filter(p -> {
+			if (p.getTeamType() != null && p.getTeamType().equals(TEAM_ADMIN)) {
+				return false;//dont collect admins Teams
+			} else
+				return true;
+		}).collect(Collectors.toList());
+
+		Collections.sort(teams, new Comparator<Team>() {
 			@Override
 			public int compare(Team t1, Team t2) {
 				// notice the cast to (Integer) to invoke compareTo
@@ -108,7 +132,7 @@ public class TeamController {
 			}
 		});
 
-		return new ApiResponse(HttpStatus.OK, SUCCESS, list);
+		return new ApiResponse(HttpStatus.OK, SUCCESS, teams);
 	}
 
 	@CrossOrigin
@@ -176,10 +200,19 @@ public class TeamController {
 	public ApiResponse update(@RequestBody Team team) {
 
 		String teamId = team.getTeamId();
+		String partnerId;
+		String groupId;
 		if (team.getTeamId() == null)
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Team with teamId : " + teamId + ", not found");
 
 		Team teaminDB = teamRepository.load(team.getTeamId(), "details");
+
+		// --------------------------------------------
+		Group group = groupRepository.load(teaminDB.getGroupId(), "details");
+		partnerId = group.getPartnerId();
+		groupId = teaminDB.getGroupId();
+		// ------------------------------------------------------------
+
 		if (teaminDB == null)
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND,
 					"Team with teamId : " + team.getTeamId() + ", not found");
@@ -189,13 +222,13 @@ public class TeamController {
 
 		teamCoursesService.deleteTeamCourses(team.getTeamId(), teaminDB.getSelectedCourses());
 
-		teamCoursesService.addTeamCourses(team.getTeamId(), team.getSelectedCourses());
+		teamCoursesService.addTeamCourses(team.getTeamId(), groupId, partnerId, team.getSelectedCourses());
 
 		return new ApiResponse(HttpStatus.OK, SUCCESS, teamRepository.load(team.getTeamId(), "details"));
 
 	}
 
-	//Team should be unique Name in an Group
+	// Team should be unique Name in an Group
 	public void checkIfTeamNameExists(String groupId, String teamName) {
 
 		List<Team> teams = teamRepository.queryOnGSI("groupId-index", "groupId", groupId);

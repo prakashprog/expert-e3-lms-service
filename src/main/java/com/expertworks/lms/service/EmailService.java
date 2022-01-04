@@ -367,9 +367,9 @@ public class EmailService {
 
 		final String FROM = welcomeEmailFrom;
 		//final String to = email.getTo();
-		final String NOT_STARTED = "Hope you’re having a great time! We just observed that you haven’t started your course yet "
-				+ "<br>Hope you will start your course as early as possible! All the best! Never stop learning.";
-		final String IN_PROGRESS = "Hope you’re having a great time learning the course!Hope you will complete the course on time! All the best! Never stop learning. ";
+		final String NOT_STARTED = "Hope you’re having a great time! We just observed that you haven’t started your course yet, "
+				+ "<br> Hope you will start your course as early as possible! All the best! Never stop learning.";
+		final String IN_PROGRESS = "Hope you’re having a great time learning the course! Hope you will complete the course on time! All the best! Never stop learning. ";
 		final String COMPLETED = "Congratulations for completing the entire course! We hope you had a great time learning the course at your own pace. You can now start implementing your knowledge in real time. ";
 		 String content = "";
 		if(sendReminderDTO.getStatus()==sendReminderDTO.getStatus().NOT_STARTED)

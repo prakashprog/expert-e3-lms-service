@@ -48,6 +48,12 @@ public class TeamCourses {
 	@DynamoDBAttribute
 	private String status;
 
+	@DynamoDBAttribute
+	private String groupId;
+
+	@DynamoDBAttribute
+	private String partnerId;
+
 	public TeamCourses() {
 	}
 
@@ -56,6 +62,14 @@ public class TeamCourses {
 
 		this.teamId = teamId;
 		this.courseId=courseId;
+	}
+
+	public TeamCourses(String teamId,String courseId,String groupId,String partnerId) {
+
+		this.teamId = teamId;
+		this.courseId=courseId;
+		this.groupId = groupId;
+		this.partnerId= partnerId;
 	}
 	/**
 	 * @return the teamId
@@ -207,6 +221,26 @@ public class TeamCourses {
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+
+
+	public String getGroupId() {
+		return groupId;
+	}
+
+
+	public void setGroupId(String groupId) {
+		this.groupId = groupId;
+	}
+
+
+	public String getPartnerId() {
+		return partnerId;
+	}
+
+
+	public void setPartnerId(String partnerId) {
+		this.partnerId = partnerId;
 	}
 
 }

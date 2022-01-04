@@ -53,16 +53,16 @@ public class TeamCoursesService {
 
 	}
 
-	public void addTeamCourses(String teamId, List<SelectedCourseDTO> selectedCourseDTOList) {
+	public void addTeamCourses(String teamId,String groupId,String partnerId , List<SelectedCourseDTO> selectedCourseDTOList) {
 		// Adding the Courses to The TeamCourses
 		if (selectedCourseDTOList != null) {
 			for (SelectedCourseDTO selectedCourseDTO : selectedCourseDTOList) {
 				String courseId = selectedCourseDTO.getCourseId();
 				if (!courseId.equalsIgnoreCase("ALL")) {
 					logger.info("TeamCourses adding TeamId '" + teamId + "': CourseId : " + courseId);
-					teamCoursesRepository.save(new TeamCourses(teamId, courseId));
+					teamCoursesRepository.save(new TeamCourses(teamId, courseId,groupId,partnerId));
 				} else {
-					this.addAllCourses(teamId);
+					this.addAllCourses(teamId,groupId,partnerId);
 				}
 
 			}
@@ -81,13 +81,14 @@ public class TeamCoursesService {
 		}
 	}
 
-	public void addAllCourses(String teamId) {
+	public void addAllCourses(String teamId,String groupId,String partnerId) {
 
 		List<Courses> allCourseList = coursesRepository.getAllCourses();
 		for (Courses courses : allCourseList) {
 			String courseId = courses.getCourseId();
-			logger.info("TeamCourses adding TeamId '" + teamId + "': ,CourseId : " + courseId);
-			teamCoursesRepository.save(new TeamCourses(teamId, courseId));
+						logger.info("TeamCourses adding All TeamId '" + teamId + "', CourseId : " + courseId+
+					", groupId : " + groupId + ", partnerId : " + partnerId);
+			teamCoursesRepository.save(new TeamCourses(teamId, courseId,groupId,partnerId));
 		}
 
 	}

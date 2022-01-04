@@ -2,6 +2,7 @@ package com.expertworks.lms.controller;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -111,6 +112,13 @@ public class CoursesController {
 							Double.parseDouble(courses.getActualPrice())));
 
 		}
+		Collections.sort(courseList, new Comparator<Courses>() {
+			@Override
+			public int compare(Courses c1, Courses c2) {
+				// notice the cast to (Integer) to invoke compareTo
+				return (c2.getCreateDate()).compareTo(c1.getCreateDate());
+			}
+		});
 
 		return new ApiResponse(HttpStatus.OK, SUCCESS, courseList);
 	}

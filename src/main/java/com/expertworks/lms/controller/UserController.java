@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
@@ -66,6 +67,9 @@ public class UserController {
 	public static final String USER_NOTVERIFIED = "NOTVERIFIED";
 	public static final String USER_VERIFIED = "VERIFIED";
 
+
+
+
 	@Autowired
 	private EmailService emailService;
 
@@ -99,6 +103,9 @@ public class UserController {
 
 	@Value("${email.verify.failureurl}")
 	private String emailFailed;
+
+	@Value("${app.admin.user.limit}")
+	private String adminUserLimitProp;
 
 	@GetMapping("/")
 	public String home() {
@@ -199,7 +206,7 @@ public class UserController {
 			throws Exception {
 
 		int userLimitDB = 4;// setting to default; ideally should come from DB
-		int userCount;
+		int currentUserCount;
 		user.setUserId(user.getEmail());
 		user.setUserName(user.getName());
 		user.setTeamId(teamId);
@@ -210,33 +217,41 @@ public class UserController {
 		// Team team = teamList.get(0);
 		checkforDuplicateUser(user.getEmail());
 
-		Team team = teamRepository.load(teamId, "details");
+		Team teamInDB = teamRepository.load(teamId, "details");
 
-		if (team == null)
+		if (teamInDB == null)
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Team is missing");
-		System.out.println("Team from DB : " + team.getTeamId());
+		System.out.println("Team from DB : " + teamInDB.getTeamId());
 		// Group group = groupRepository.queryOnsk(team).get(0);
-		Group group = groupRepository.load(team.getGroupId(), "details");
+		Group group = groupRepository.load(teamInDB.getGroupId(), "details");
 		if (group == null)
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Group is missing");
 		System.out.println("Group from DB : " + group.getGroupId());
 		if (group.getUserLimit() == null)
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-					"Limit on Group " + team.getGroupId() + " is missing");
+					"Limit on Group " + teamInDB.getGroupId() + " is missing");
 		System.out.println("getUserLimit in GroupTable from DB : " + group.getUserLimit());
 		int groupUserLimit = Integer.parseInt(group.getUserLimit());
 
 		userLimitDB = groupUserLimit;
-		List teamUsers = userRepository.queryOnGSI("teamId-index", "teamId", teamId);
-		userCount = teamUsers.size();
-		logger.info("Current userCount in DB for Team :" + userCount + "(TeamId :" + teamId + ")");
-		if (userCount >= userLimitDB) {
+		//List teamUsers = userRepository.queryOnGSI("teamId-index", "teamId", teamId);
+		//userCount = teamUsers.size();
+
+		List<User> groupUsers = userRepository.queryOnGSI("groupId-index", "groupId", teamInDB.getGroupId());
+		currentUserCount = groupUsers.size();
+
+		logger.info("Current userCount in DB for Team :" + currentUserCount + "(TeamId :" + teamId + ")");
+		if (currentUserCount >= userLimitDB) {
 			// throw new Exception("Maximum user count reached");
+//			throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+//					"Group Users Reached Maximun limit : " + userLimitDB  +",currentUserCountinDB: "+currentUserCount+";groupId:"+teamInDB.getGroupId());
+//
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-					"Team Users Reached Maximun limit : " + userLimitDB);
+					"You have reached the limit of Maximum number of licenses. : " + userLimitDB);
 		}
 
 		user.setGroupId(group.getGroupId());
+		//review once zone
 		Partner partner = partnerRepository.queryOnsk(group.getGroupId()).get(0);
 		user.setPartnerId(partner.getPartnerId());
 		user.setUserLimit(String.valueOf(userLimitDB));
@@ -248,7 +263,7 @@ public class UserController {
 			user.setPassword(randompwd);
 		}
 		User savedUser = userRepository.save(user);
-		teamRepository.addUserToTeam(team.getTeamId(), savedUser);
+		teamRepository.addUserToTeam(teamInDB.getTeamId(), savedUser);
 //		emailService.sendCredentailsMessagev1(user.getEmail(), StringUtils.capitalize(user.getName()), user.getUserId(),
 //				user.getPassword());
 
@@ -271,8 +286,9 @@ public class UserController {
 	public ApiResponse createUser(@RequestParam(required = true, name = "groupId") String groupId,
 			@RequestParam(required = false, name = "teamId") String teamId, @RequestBody User user) throws Exception {
 
-		int userLimitDB = 4;// setting to default; ideally should come from DB
-		int userCount;
+		String partnerId;
+		int adminUserLimit = Integer.parseInt(adminUserLimitProp);// setting to default; ideally should come from DB
+		int currentUserCountinDB;
 		user.setUserId(user.getEmail());
 		user.setUserName(user.getName());
 		user.setTeamId(teamId);
@@ -302,22 +318,24 @@ public class UserController {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Limit on Group " + groupId + " is missing");
 		System.out.println("getUserLimit in GroupTable from DB : " + group.getUserLimit());
 		int groupUserLimit = Integer.parseInt(group.getUserLimit());
-		userLimitDB = groupUserLimit;
-		List groupUsers = userRepository.queryOnGSI("groupId-index", "groupId", groupId);
-		userCount = groupUsers.size();
-		logger.info("Current userCount in DB for Group :" + userCount + "(groupId :" + groupId + ")");
-		if (userCount >= userLimitDB) {
-			// throw new Exception("Maximum user count reached");
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Users Reached Maximun limit : " + userLimitDB);
+		//adminUserLimit = groupUserLimit;
+		List<User> groupUsers = userRepository.queryOnGSI("groupId-index", "groupId", groupId);
+		List<User> adminUsers = groupUsers.stream().filter(u -> u.getUserRole().equals(ExpertRole.ROLE_ADMIN)).collect(Collectors.toList());
+		//userCount = groupUsers.size();
+		currentUserCountinDB = adminUsers.size();
+		logger.info("Current userCount in DB for Group :" + currentUserCountinDB + "(groupId :" + groupId + ")");
+		if (currentUserCountinDB >= adminUserLimit) {
+				throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Admin Users Reached Maximun limit : " + adminUserLimit +",currentUserCountinDB: "+currentUserCountinDB);
 		}
 		user.setGroupId(group.getGroupId());
+		partnerId= group.getPartnerId();
 		Partner partner = partnerRepository.queryOnsk(group.getGroupId()).get(0);
 		user.setPartnerId(partner.getPartnerId());
-		user.setUserLimit(String.valueOf(userLimitDB));
+		user.setUserLimit(String.valueOf(adminUserLimit));
 
 		if (user.getUserRole() != null && user.getUserRole()==(ExpertRole.ROLE_ADMIN)) {
 			user.setPassword("admin");// default password
-			teamCoursesService.addAllCourses(teamId);
+			teamCoursesService.addAllCourses(teamId,groupId,partnerId);
 
 		} else {
 			String randompwd = this.getRandomPassword(4);

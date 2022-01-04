@@ -21,10 +21,15 @@ public class SubscriptionsService {
 
 
 	public Subscriptions get(String subscriptionIdentifier) {
+		System.out.println("subscriptionIdentifier: " +  subscriptionIdentifier);
 		List<Subscriptions> subscriptions = null;
 		subscriptions =  subscriptionsRepository.get(subscriptionIdentifier);
-		if(subscriptions!=null && !subscriptions.isEmpty())
+		System.out.println("Fetched Subsricption subscriptions : "+ subscriptions);
+
+		if(subscriptions!=null && !subscriptions.isEmpty()) {
+			System.out.println("Fetched Subsricption subscriptions size: "+ subscriptions.size());
 		   return subscriptions.get(0);
+		}
 		return null;
 	}
 

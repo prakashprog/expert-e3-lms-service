@@ -12,12 +12,12 @@ import io.jsonwebtoken.Claims;
 
 @Service
 public class TokenUtil {
-	
+
 	private final static Logger logger = LoggerFactory.getLogger(TokenUtil.class);
-	
+
 	@Autowired
 	private JwtUtil jwtUtil;
-	
+
 	public String getPartner() {
 
 //		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -38,15 +38,15 @@ public class TokenUtil {
 //			teamId = ((AuthTokenDetails) credentials).getTeamId();
 //			userId = ((AuthTokenDetails) credentials).getSub();
 //			partnerId = ((AuthTokenDetails) credentials).getPartnerId();
-//			
+//
 //
 //		}
-		
+
 		String username = null;
 		String teamId = null;
 		String userId = null;
-		String partnerId=null;
-		
+		String partnerId = null;
+
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		Object details = authentication.getDetails();
 		if (details instanceof OAuth2AuthenticationDetails) {
@@ -63,16 +63,12 @@ public class TokenUtil {
 		System.out.println("teamId : " + teamId);
 		System.out.println("sub : " + userId);
 		System.out.println("partnerId : " + partnerId);
-		
 
 		return partnerId;
 	}
-	
-	
-	
-	public String getUserId()
-	{
-		String userId= null;
+
+	public String getUserId() {
+		String userId = null;
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		Object details = authentication.getDetails();
 		if (details instanceof OAuth2AuthenticationDetails) {
@@ -80,12 +76,24 @@ public class TokenUtil {
 			System.out.println(":::==" + oAuth2AuthenticationDetails.getTokenValue());
 			Claims claims = jwtUtil.extractAllClaims(oAuth2AuthenticationDetails.getTokenValue());
 			userId = claims.get("userId", String.class);
-			
+
 		}
-		 return userId;
-		
+		return userId;
+
 	}
-	
-	
+
+	public String getGroupId() {
+		String groupId = null;
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Object details = authentication.getDetails();
+		if (details instanceof OAuth2AuthenticationDetails) {
+			OAuth2AuthenticationDetails oAuth2AuthenticationDetails = (OAuth2AuthenticationDetails) details;
+			System.out.println(":::==" + oAuth2AuthenticationDetails.getTokenValue());
+			Claims claims = jwtUtil.extractAllClaims(oAuth2AuthenticationDetails.getTokenValue());
+			groupId = claims.get("groupId", String.class);
+		}
+		return groupId;
+
+	}
 
 }

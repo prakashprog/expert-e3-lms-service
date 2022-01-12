@@ -5,6 +5,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -49,6 +50,7 @@ public class StorageController {
 		return new ResponseEntity<>(fileName, HttpStatus.OK);
 	}
 
+	@CrossOrigin
 	@GetMapping("/download/{fileName}")
 	public ResponseEntity<ByteArrayResource> downloadFile(@PathVariable String fileName) {
 		byte[] data = service.downloadFile(fileName);

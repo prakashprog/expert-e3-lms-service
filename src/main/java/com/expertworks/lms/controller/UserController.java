@@ -482,17 +482,25 @@ public class UserController {
 		String userId = user.getUserId();
 		String newPassword = user.getPassword();
 		User loadedUser = userRepository.load(user.getUserId());
+
+		if(loadedUser==null)
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, user.getUserId()+ " does not exist");
+
 		System.out.println(loadedUser.getUserId());
 		System.out.println(loadedUser.getPassword() + ":Id : " + id);
 
 		System.out.println("DB Password :" + loadedUser.getPassword() + " ;Old Password : " + user.getOldpassword());
 
 		if (!loadedUser.getPassword().equals(user.getOldpassword()) || newPassword == "") {
-			throw new Exception("Password did not match");
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Password did not match");
 
 		}
+		user = userRepository.update(userId, user);
+		EmailDTO email = new EmailDTO(loadedUser.getEmail(), StringUtils.capitalize(loadedUser.getName()), loadedUser.getUserId(),
+				loadedUser.getPassword());
+		emailService.sendPasswordChanged(email);
 
-		return new ApiResponse(HttpStatus.OK, SUCCESS, userRepository.update(userId, user));
+		return new ApiResponse(HttpStatus.OK, SUCCESS, user);
 	}
 
 	@CrossOrigin

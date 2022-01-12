@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
+import org.springframework.util.StringUtils;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
@@ -61,10 +62,13 @@ public class EmailService {
 	private String templateRootURL;
 
 	@Value("${aws.ses.emailid.welcome}")
-	private String welcomeEmailFrom;
+	private String welcomeEmail;
 
 	@Value("${aws.ses.emailid.sales}")
-	private String salesEmailFrom;
+	private String salesEmail;
+
+	@Value("${aws.ses.emailid.support}")
+	private String supportEmail;
 
 	@Bean
 	public AmazonSimpleEmailService getAmazonSimpleEmailService() {
@@ -204,7 +208,7 @@ public class EmailService {
 	public void sendEmailVerificationv1(EmailDTO email) throws Exception {
 
 		// final String FROM = "Sales@expert-works.com";
-		final String FROM = welcomeEmailFrom;
+		final String FROM = welcomeEmail;
 		final String SUBJECT = "Welcome to Expert Works , please verify your email!";
 		Map<String, Object> model = new HashMap<>();
 		String verificationKey = email.getVerificationKey();
@@ -286,7 +290,7 @@ public class EmailService {
 	public void sendCredentailsMessagev1(EmailDTO email) throws Exception {
 
 		// final String FROM = "Sales@expert-works.com";
-		final String FROM = welcomeEmailFrom;
+		final String FROM = welcomeEmail;
 		final String SUBJECT = "Welcome to Expert Works";
 
 		Map<String, Object> model = new HashMap<>();
@@ -314,7 +318,7 @@ public class EmailService {
 
 		// final String FROM = "Sales@expert-works.com";
 		// final String FROM = "Sales Team <Sales@expert-works.com>";
-		final String FROM = salesEmailFrom;
+		final String FROM = salesEmail;
 		final String SUBJECT = "Thanks for contacting Expert-Works ";
 
 		Map<String, Object> model = new HashMap<>();
@@ -340,11 +344,15 @@ public class EmailService {
 
 	}
 
-	public void sendSalesEMail(EmailDTO email, Contact contact) {
 
-		final String FROM = salesEmailFrom;
+
+
+
+	public void sendSalesEmail(EmailDTO email, Contact contact) {
+
+		final String FROM = salesEmail;
 		//final String to = email.getTo();
-		final String to = salesEmailFrom;
+		final String to = salesEmail;
 		final String SUBJECT = "New Contact";
 		final String HTMLBODY = "Hi Team, <br>" + "<br>" + "Please find below new contact."
 				+ "<b> </b> : " + "<i>" + this.converttoHTML(contact) + "</i><br>"
@@ -362,10 +370,72 @@ public class EmailService {
 
 	}
 
+	/**
+	 *
+	 * @param email
+	 * @param contact
+	 */
+
+	public void sendSupportEmail(EmailDTO email, Contact contact) {
+
+		final String FROM = supportEmail;
+		//final String to = email.getTo();
+		final String to = supportEmail;
+		final String SUBJECT = StringUtils.capitalize(contact.getLoggedinUser())+" "+"contacted for support";
+		final String HTMLBODY = "Hi Team, <br>" + "<br>" + "Please find below new contact."
+				+ "<b> </b> : " + "<i>" + this.converttoHTML(contact) + "</i><br>"
+				+ "<p>This email was sent from <a href='https://www.expert-works.com'>" + "expert-works.com</a> "
+				+ "<br><br> Thanks,<br> Expert Works Team.</a> ";
+		final String TEXTBODY = "This email was sent from <a href='https://www.expert-works.com'>\"";
+
+		SendEmailRequest request = new SendEmailRequest().withDestination(new Destination().withToAddresses(to))
+				.withMessage(new com.amazonaws.services.simpleemail.model.Message()
+						.withBody(new Body().withHtml(new Content().withCharset("UTF-8").withData(HTMLBODY))
+								.withText(new Content().withCharset("UTF-8").withData(TEXTBODY)))
+						.withSubject(new Content().withCharset("UTF-8").withData(SUBJECT)))
+				.withSource(FROM);
+		client.sendEmail(request);
+
+	}
+	/**
+	 *
+	 * @param email
+	 * @throws Exception
+	 */
+	public void sendPasswordChanged(EmailDTO email) throws Exception {
+
+		final String FROM = welcomeEmail;
+		final String SUBJECT = "Password has been changed";
+
+		System.out.println("destination Email ; "+email.getTo());
+
+		Map<String, Object> model = new HashMap<>();
+		model.put("user", email.getUsername());
+
+		Configuration fmConfiguration = freeMarkerConfigurationFactoryBean.createConfiguration();
+		Template template = fmConfiguration.getTemplate("email_template/password_changed.html");
+		String HTMLBODY = FreeMarkerTemplateUtils.processTemplateIntoString(template, model);
+
+		System.out.println("======================html===========================");
+		// System.out.println(HTMLBODY);
+
+		final String TEXTBODY = "This email was sent from <a href='https://www.expert-works.com'>\"";
+
+		SendEmailRequest request = new SendEmailRequest()
+				.withDestination(new Destination().withToAddresses(email.getTo()))
+				.withMessage(new com.amazonaws.services.simpleemail.model.Message()
+						.withBody(new Body().withHtml(new Content().withCharset("UTF-8").withData(HTMLBODY))
+								.withText(new Content().withCharset("UTF-8").withData(TEXTBODY)))
+						.withSubject(new Content().withCharset("UTF-8").withData(SUBJECT)))
+				.withSource(FROM);
+		client.sendEmail(request);
+
+	}
+
 
 	public void sendRemainderEmail(SendReminderDTO sendReminderDTO) {
 
-		final String FROM = welcomeEmailFrom;
+		final String FROM = welcomeEmail;
 		//final String to = email.getTo();
 		final String NOT_STARTED = "Hope you’re having a great time! We just observed that you haven’t started your course yet, "
 				+ "<br> Hope you will start your course as early as possible! All the best! Never stop learning.";
@@ -410,23 +480,27 @@ public class EmailService {
 
 		StringBuilder sb = new StringBuilder();
 
+		sb.append("<style type='text/css'>th { background-color: #04AA6D;  color: white;}</style>");
+
 		sb.append("<table border='1' style='border-collapse:collapse'>");
-		sb.append("<th> ContactId </th>");
-		sb.append("<th> Firstname </th>");
-		sb.append("<th> Lastname </th>");
-		sb.append("<th> Mobile </th>");
-		sb.append("<th> Company </th>");
-		sb.append("<th> Email </th>");
-		sb.append("<th> Message </th>");
+		sb.append("<th style='text-align: left;background-color: #04AA6D;color: white'> ContactId </th>");
+		sb.append("<th style='text-align: left;background-color: #04AA6D;color: white'> Firstname </th>");
+		sb.append("<th style='text-align: left;background-color: #04AA6D;color: white'> Lastname </th>");
+		sb.append("<th style='text-align: left;background-color: #04AA6D;color: white'> Mobile </th>");
+		sb.append("<th style='text-align: left;background-color: #04AA6D;color: white'> Company </th>");
+		sb.append("<th style='text-align: left;background-color: #04AA6D;color: white'> Email </th>");
+		sb.append("<th style='text-align: left;background-color: #04AA6D;color: white'> Message </th>");
+		sb.append("<th style='text-align: left;background-color: #04AA6D;color: white'> LoggedIn </th>");
 
 		sb.append("<tr>");
-		sb.append("<td> " + p.getContactId() + " </td>");
-		sb.append("<td> " + p.getFirstname() + " </td>");
-		sb.append("<td> " + p.getLastname() + " </td>");
-		sb.append("<td> " + p.getMobile() + " </td>");
-		sb.append("<td> " + p.getCompany() + " </td>");
-		sb.append("<td> " + p.getEmail() + " </td>");
-		sb.append("<td> " + p.getMessage() + " </td>");
+		sb.append("<td style='text-align: left'>" + p.getContactId() + " </td>");
+		sb.append("<tdstyle='text-align: left'>" + p.getFirstname() + " </td>");
+		sb.append("<tdstyle='text-align: left'>" + p.getLastname() + " </td>");
+		sb.append("<td style='text-align: left'> " + p.getMobile() + " </td>");
+		sb.append("<td style='text-align: left'> " + p.getCompany() + " </td>");
+		sb.append("<td style='text-align: left'> " + p.getEmail() + " </td>");
+		sb.append("<td style='text-align: left'> " + p.getMessage() + " </td>");
+		sb.append("<td style='text-align: left'> " + p.getLoggedinUser() + " </td>");
 
 		sb.append("</tr>");
 

@@ -41,36 +41,37 @@ public class ContactController {
 	@Autowired
 	private ContactRepository contactRepository;
 
-
-
 	@CrossOrigin
 	@PostMapping("public/contactus")
-	public ApiResponse save(@RequestBody @Valid  Contact contact) throws Exception {
+	public ApiResponse save(@RequestBody @Valid Contact contact) throws Exception {
 
 		System.out.println("Request Recieved in contactus");
 		String[] to = { contact.getEmail() };
 		JSONObject obj = new JSONObject();
-		String name = contact.getFirstname()!=null?contact.getFirstname():"";
-		String lastname = contact.getLastname()!=null?contact.getLastname(): "";
-		//Assert.notNull(contact.getFirstname(), "Name is required"); gives 500 error
+		String name = contact.getFirstname() != null ? contact.getFirstname() : "";
+		String lastname = contact.getLastname() != null ? contact.getLastname() : "";
+		// Assert.notNull(contact.getFirstname(), "Name is required"); gives 500 error
 
-		obj.put("name", name +" "+ lastname);
+		obj.put("name", name + " " + lastname);
 		obj.put("ending", "Thanks");
-		//String templateDataJson = "{ \"name\":\"Jack\", \"eom\": \"Tiger\"}";
-		//emailService.sendEmail(to, obj.toJSONString());
+		// String templateDataJson = "{ \"name\":\"Jack\", \"eom\": \"Tiger\"}";
+		// emailService.sendEmail(to, obj.toJSONString());
 
-		Contact saved= contactRepository.save(contact);
+		Contact saved = contactRepository.save(contact);
 
 		EmailDTO email = new EmailDTO();
-		email.to= contact.getEmail();
-		email.username=	name;
+		email.to = contact.getEmail();
+		email.username = name;
 
 		emailService.sendContactUsEMailv1(email);
 		System.out.println("saved : " + saved.toString());
 
-		//Send email to sales Team as well
+		// Send email to sales Team as well
 
-		emailService.sendSalesEMail(email,saved);
+		if (contact.getLoggedinUser() != null)
+			emailService.sendSupportEmail(email, saved);
+		else
+			emailService.sendSalesEmail(email, saved);
 
 		return new ApiResponse(HttpStatus.OK, SUCCESS, saved);
 	}
@@ -91,8 +92,8 @@ public class ContactController {
 		// List list = coursesRepository.getmy1Courses(courseId,"S#1");
 		Date date = list.get(0).getCreatedDate();
 		SimpleDateFormat mdyFormat = new SimpleDateFormat("MMM-dd-yyyy");
-		 String mdy = mdyFormat.format(date);
-        System.out.println("DateFormat : "+mdy);
+		String mdy = mdyFormat.format(date);
+		System.out.println("DateFormat : " + mdy);
 		return new ApiResponse(HttpStatus.OK, SUCCESS, list);
 	}
 
@@ -108,13 +109,10 @@ public class ContactController {
 		return contactRepository.update(contactId, contact);
 	}
 
-
 	@CrossOrigin(origins = "*")
 	@PutMapping("/putcall/{contactId}")
-	public ApiResponse putCallTest(@PathVariable("contactId") String contactId,@RequestBody Contact contact) {
+	public ApiResponse putCallTest(@PathVariable("contactId") String contactId, @RequestBody Contact contact) {
 		return new ApiResponse(HttpStatus.OK, SUCCESS, "Put working...");
 	}
-
-
 
 }

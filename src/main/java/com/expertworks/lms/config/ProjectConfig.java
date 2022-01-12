@@ -57,6 +57,7 @@ public class ProjectConfig extends ResourceServerConfigurerAdapter {
     @Override
     public void configure(HttpSecurity http) throws Exception {
     	 http.csrf().disable().authorizeRequests().antMatchers(
+    			 "/file/download/*",
     			 "/file/upload",
     			 "/",
     			 "/getremoteip",

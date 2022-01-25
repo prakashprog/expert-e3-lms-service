@@ -70,6 +70,9 @@ public class EmailService {
 	@Value("${aws.ses.emailid.support}")
 	private String supportEmail;
 
+	@Value("${aws.ses.emailid.business}")
+	private String businessEmail;
+
 	@Bean
 	public AmazonSimpleEmailService getAmazonSimpleEmailService() {
 		AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
@@ -318,11 +321,11 @@ public class EmailService {
 
 		// final String FROM = "Sales@expert-works.com";
 		// final String FROM = "Sales Team <Sales@expert-works.com>";
-		final String FROM = salesEmail;
+		final String FROM = businessEmail;
 		final String SUBJECT = "Thanks for contacting Expert-Works ";
 
 		Map<String, Object> model = new HashMap<>();
-		model.put("user", email.getUsername());
+		model.put("user", StringUtils.capitalize(email.getUsername()));
 
 		Configuration fmConfiguration = freeMarkerConfigurationFactoryBean.createConfiguration();
 		Template template = fmConfiguration.getTemplate("email_template/more_details_email.html");

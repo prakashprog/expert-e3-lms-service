@@ -487,7 +487,7 @@ public class UserController {
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN, user.getUserId()+ " does not exist");
 
 		System.out.println(loadedUser.getUserId());
-		System.out.println(loadedUser.getPassword() + ":Id : " + id);
+		System.out.println(loadedUser.getPassword() + ":Id: : " + id);
 
 		System.out.println("DB Password :" + loadedUser.getPassword() + " ;Old Password : " + user.getOldpassword());
 

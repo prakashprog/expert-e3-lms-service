@@ -45,7 +45,7 @@ public class ContactController {
 	@PostMapping("public/contactus")
 	public ApiResponse save(@RequestBody @Valid Contact contact) throws Exception {
 
-		System.out.println("Request Recieved in contactus");
+		System.out.println("Request Recieved in contactus...");
 		String[] to = { contact.getEmail() };
 		JSONObject obj = new JSONObject();
 		String name = contact.getFirstname() != null ? contact.getFirstname() : "";

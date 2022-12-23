@@ -67,9 +67,6 @@ public class UserController {
 	public static final String USER_NOTVERIFIED = "NOTVERIFIED";
 	public static final String USER_VERIFIED = "VERIFIED";
 
-
-
-
 	@Autowired
 	private EmailService emailService;
 
@@ -88,12 +85,8 @@ public class UserController {
 	@Autowired
 	private PartnerRepository partnerRepository;
 
-
 	@Autowired
 	TokenUtil tokenUtil;
-
-
-
 
 	@Autowired
 	private TeamCoursesService teamCoursesService;
@@ -149,7 +142,7 @@ public class UserController {
 	}
 
 	@CrossOrigin
-	@GetMapping("/public/signup/{userId}/{verificationtoken}")
+	@GetMapping("/public/sigsnup/{userId}/{verificationtoken}")
 	public RedirectView verifyEmail(@PathVariable("userId") String userId,
 			@PathVariable("verificationtoken") String verificationtoken) throws Exception {
 
@@ -234,8 +227,8 @@ public class UserController {
 		int groupUserLimit = Integer.parseInt(group.getUserLimit());
 
 		userLimitDB = groupUserLimit;
-		//List teamUsers = userRepository.queryOnGSI("teamId-index", "teamId", teamId);
-		//userCount = teamUsers.size();
+		// List teamUsers = userRepository.queryOnGSI("teamId-index", "teamId", teamId);
+		// userCount = teamUsers.size();
 
 		List<User> groupUsers = userRepository.queryOnGSI("groupId-index", "groupId", teamInDB.getGroupId());
 		currentUserCount = groupUsers.size();
@@ -251,12 +244,14 @@ public class UserController {
 		}
 
 		user.setGroupId(group.getGroupId());
-		//review once zone
-		Partner partner = partnerRepository.queryOnsk(group.getGroupId()).get(0);
+		// review once zone
+		Partner partner = partnerRepository.load(group.getPartnerId(), "details");
+		// Partner partner = partnerRepository.queryOnsk(group.getGroupId()).get(0);
+		user.setPartnerImg(partner.getImg());
 		user.setPartnerId(partner.getPartnerId());
 		user.setUserLimit(String.valueOf(userLimitDB));
 
-		if (user.getUserRole() != null && user.getUserRole()==ExpertRole.ROLE_ADMIN) {
+		if (user.getUserRole() != null && user.getUserRole() == ExpertRole.ROLE_ADMIN) {
 			user.setPassword("admin");// default password
 		} else {
 			String randompwd = this.getRandomPassword(4);
@@ -296,7 +291,7 @@ public class UserController {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userRole is missing");
 
 		checkforDuplicateUser(user.getEmail());
-		if (user.getUserRole() != null && user.getUserRole()==ExpertRole.ROLE_ADMIN) {
+		if (user.getUserRole() != null && user.getUserRole() == ExpertRole.ROLE_ADMIN) {
 			Team adminTeam = teamService.createOrGetAdminTeam(groupId);
 			teamId = adminTeam.getTeamId();
 			System.out.println("createUser  TeamId : " + teamId);
@@ -318,24 +313,29 @@ public class UserController {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Limit on Group " + groupId + " is missing");
 		System.out.println("getUserLimit in GroupTable from DB : " + group.getUserLimit());
 		int groupUserLimit = Integer.parseInt(group.getUserLimit());
-		//adminUserLimit = groupUserLimit;
+		// adminUserLimit = groupUserLimit;
 		List<User> groupUsers = userRepository.queryOnGSI("groupId-index", "groupId", groupId);
-		List<User> adminUsers = groupUsers.stream().filter(u -> u.getUserRole().equals(ExpertRole.ROLE_ADMIN)).collect(Collectors.toList());
-		//userCount = groupUsers.size();
+		List<User> adminUsers = groupUsers.stream().filter(u -> u.getUserRole().equals(ExpertRole.ROLE_ADMIN))
+				.collect(Collectors.toList());
+		// userCount = groupUsers.size();
 		currentUserCountinDB = adminUsers.size();
 		logger.info("Current userCount in DB for Group :" + currentUserCountinDB + "(groupId :" + groupId + ")");
 		if (currentUserCountinDB >= adminUserLimit) {
-				throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Admin Users Reached Maximun limit : " + adminUserLimit +",currentUserCountinDB: "+currentUserCountinDB);
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Admin Users Reached Maximun limit : "
+					+ adminUserLimit + ",currentUserCountinDB: " + currentUserCountinDB);
 		}
 		user.setGroupId(group.getGroupId());
-		partnerId= group.getPartnerId();
-		Partner partner = partnerRepository.queryOnsk(group.getGroupId()).get(0);
+		partnerId = group.getPartnerId();
+		Partner partner = partnerRepository.load(partnerId, "details");
+		// Partner partner = partnerRepository.queryOnsk(group.getGroupId()).get(0);
+		// partner.getImg()
+		user.setPartnerImg(partner.getImg());
 		user.setPartnerId(partner.getPartnerId());
 		user.setUserLimit(String.valueOf(adminUserLimit));
 
-		if (user.getUserRole() != null && user.getUserRole()==(ExpertRole.ROLE_ADMIN)) {
+		if (user.getUserRole() != null && user.getUserRole() == (ExpertRole.ROLE_ADMIN)) {
 			user.setPassword("admin");// default password
-			teamCoursesService.addAllCourses(teamId,groupId,partnerId);
+			teamCoursesService.addAllCourses(teamId, groupId, partnerId);
 
 		} else {
 			String randompwd = this.getRandomPassword(4);
@@ -472,8 +472,6 @@ public class UserController {
 		return new ApiResponse(HttpStatus.OK, SUCCESS, userRepository.update(userId, user));
 	}
 
-
-
 	@CrossOrigin
 	@PostMapping("/user/changepwd")
 	public ApiResponse changePwd(@RequestBody User user, @RequestParam(required = false, name = "id") String id)
@@ -483,8 +481,8 @@ public class UserController {
 		String newPassword = user.getPassword();
 		User loadedUser = userRepository.load(user.getUserId());
 
-		if(loadedUser==null)
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, user.getUserId()+ " does not exist");
+		if (loadedUser == null)
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, user.getUserId() + " does not exist");
 
 		System.out.println(loadedUser.getUserId());
 		System.out.println(loadedUser.getPassword() + ":Id: : " + id);
@@ -492,12 +490,12 @@ public class UserController {
 		System.out.println("DB Password :" + loadedUser.getPassword() + " ;Old Password : " + user.getOldpassword());
 
 		if (!loadedUser.getPassword().equals(user.getOldpassword()) || newPassword == "") {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Password did not match");
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Password did not match");
 
 		}
 		user = userRepository.update(userId, user);
-		EmailDTO email = new EmailDTO(loadedUser.getEmail(), StringUtils.capitalize(loadedUser.getName()), loadedUser.getUserId(),
-				loadedUser.getPassword());
+		EmailDTO email = new EmailDTO(loadedUser.getEmail(), StringUtils.capitalize(loadedUser.getName()),
+				loadedUser.getUserId(), loadedUser.getPassword());
 		emailService.sendPasswordChanged(email);
 
 		return new ApiResponse(HttpStatus.OK, SUCCESS, user);

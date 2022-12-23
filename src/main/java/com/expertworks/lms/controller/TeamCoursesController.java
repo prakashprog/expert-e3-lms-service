@@ -17,13 +17,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
+import com.expertworks.lms.enums.CustomerType;
+import com.expertworks.lms.enums.SubscriptionStatus;
 import com.expertworks.lms.http.ApiResponse;
 import com.expertworks.lms.http.CoursesDTO;
 import com.expertworks.lms.model.Courses;
+import com.expertworks.lms.model.Subscriptions;
 import com.expertworks.lms.model.TeamCourses;
 import com.expertworks.lms.repository.CoursesRepository;
 import com.expertworks.lms.repository.TeamCoursesRepository;
+import com.expertworks.lms.service.SubscriptionsService;
 import com.expertworks.lms.util.AuthTokenDetails;
 import com.expertworks.lms.util.JwtUtil;
 
@@ -44,6 +49,9 @@ public class TeamCoursesController {
 
 	@Autowired
 	private CoursesRepository coursesRepository;
+
+	@Autowired
+	private SubscriptionsService subscriptionsService;
 
 	@Autowired
 	private JwtUtil jwtUtil;
@@ -78,6 +86,7 @@ public class TeamCoursesController {
 		List<TeamCourses> teamCourses = null;
 		List<CoursesDTO> coursesDTOList = new ArrayList();
 		String teamIdinToken = null;
+		String groupId = null;
 		String userId = null;
 		System.out.println(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
 		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -104,8 +113,21 @@ public class TeamCoursesController {
 			System.out.println("--" + claims.get("teamId"));
 			teamIdinToken = claims.get("teamId", String.class);
 			userId = claims.get("userId", String.class);
+			groupId = claims.get("groupId", String.class);
 		}
-		System.out.println("teamIdinToken : " + teamIdinToken);
+		//========================================
+
+		Subscriptions dbsubscriptions = subscriptionsService.query(CustomerType.B2B +"_" + groupId);
+		System.out.println("dbsubscriptions : "+ dbsubscriptions);
+
+        if(dbsubscriptions==null)
+        	throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No Rows/Subscription found for groupId:"+groupId);
+    	if (dbsubscriptions != null && dbsubscriptions.getSubscriptionStatus() != SubscriptionStatus.SUBSCRIBED)
+    		throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Subscription Satus for groupId:"+groupId+"["+dbsubscriptions.getSubscriptionStatus()+"]");
+
+		//============================================
+
+		System.out.println("teamIdinToken : " + teamIdinToken +"; groupId : "+groupId);
 		teamCourses = teamCoursesRepository.getTeamCourses(teamIdinToken);
 
 
@@ -119,8 +141,8 @@ public class TeamCoursesController {
 
 		for (TeamCourses teamCourse : teamCourses) {
 
-			System.out.println("TeamId : " + teamIdinToken + " , CourseId : " + teamCourse.getCourseId() + ",total:"
-					+ teamCourses.size());
+//			System.out.println("TeamId : " + teamIdinToken + " , CourseId : " + teamCourse.getCourseId() + ",total:"
+//					+ teamCourses.size());
 
 			// List<Courses> list =
 			// coursesRepository.getMetaDetailsCourses(teamCourse.getCourseId());
@@ -134,7 +156,7 @@ public class TeamCoursesController {
 		}
 
 		List<String> imageList = coursesDTOList.stream().map(p -> p.getImg()).collect(Collectors.toList());
-		System.out.println(imageList);
+		//System.out.println(imageList);
 		coursesDTOList.stream().map(p -> p.getImg()).forEach(p -> System.out.println(p));
 		return new ApiResponse(HttpStatus.OK, SUCCESS, coursesDTOList);
 	}

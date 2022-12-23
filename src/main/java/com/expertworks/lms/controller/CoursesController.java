@@ -276,6 +276,8 @@ public class CoursesController {
 		coursesDetailsDTO.setReviews(courselevelData.getReviews());
 		coursesDetailsDTO.setActualPrice(courselevelData.getActualPrice());
 		coursesDetailsDTO.setPrice(courselevelData.getPrice());
+		coursesDetailsDTO.setMeta(courselevelData.getMeta());
+		coursesDetailsDTO.setHeading(courselevelData.getHeading());
 
 		System.out.println("NumberUtils.isCreatable ; " + NumberUtils.isCreatable(courselevelData.getPrice()));
 		if (NumberUtils.isCreatable(courselevelData.getPrice())) {
@@ -334,7 +336,23 @@ public class CoursesController {
 		System.out.println("courseId : " + courseId);
 		System.out.println("teamId : " + teamId);
 
-		List<Courses> sectionList = coursesRepository.getCourseSections(courseId);
+		// ----------------------------START------
+		List<Courses> allRecordList = coursesRepository.getAllRecords(courseId);
+		Courses courselevel = null;
+		List<Courses> sectionList = new ArrayList();
+
+		// List<Courses> secList = allRecordList.stream() .filter(p
+		// ->p.getSk().startsWith("C#") ) .collect(Collectors.toList());
+		for (Courses row : allRecordList) {
+			if (row.getSk().startsWith("C#"))
+				courselevel = row;
+			else
+				sectionList.add(row);
+		}
+
+		// --------------------------------------END
+
+		// List<Courses> sectionList = coursesRepository.getCourseSections(courseId);
 		List<CoursesDTO> courseDTOList = new ArrayList();
 
 		for (Courses section : sectionList) {
@@ -345,7 +363,7 @@ public class CoursesController {
 		Collections.sort(courseDTOList);
 		// List<Courses> coursesMetaList =
 		// coursesRepository.getCoursesMetaDetails(courseId);
-		Courses courselevel = coursesRepository.getCoursesMetaDetails(courseId);
+		// Courses courselevel = coursesRepository.getCoursesMetaDetails(courseId);
 		String s3folder = courselevel.getS3folder();
 		System.out.println("s3folder : " + s3folder);
 
@@ -384,6 +402,10 @@ public class CoursesController {
 
 		coursesDetailsDTO.setActualPrice(courselevel.getActualPrice());
 		coursesDetailsDTO.setPrice(courselevel.getPrice());
+
+
+		coursesDetailsDTO.setMeta(courselevel.getMeta());
+		coursesDetailsDTO.setHeading(courselevel.getHeading());
 
 		// coursesDetailsDTO.setCurrencies(courselevel.getCurrencies());
 		if (NumberUtils.isCreatable(courselevel.getPrice()) && NumberUtils.isCreatable(courselevel.getActualPrice()))

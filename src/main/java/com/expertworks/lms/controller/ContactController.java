@@ -7,6 +7,8 @@ import java.util.List;
 import javax.validation.Valid;
 
 import org.json.simple.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -34,6 +36,7 @@ import com.expertworks.lms.service.EmailService;
 public class ContactController {
 
 	public static final String SUCCESS = "success";
+	private final static Logger logger = LoggerFactory.getLogger(ContactController.class);
 
 	@Autowired
 	private EmailService emailService;
@@ -62,16 +65,23 @@ public class ContactController {
 		EmailDTO email = new EmailDTO();
 		email.to = contact.getEmail();
 		email.username = name;
+        //Sending acknowledge mail to user that ExpertTeam received your request(expertbusiness@expert-works.com)
 
-		emailService.sendContactUsEMailv1(email);
+		if (contact.getLoggedinUser() != null && !contact.getLoggedinUser().isEmpty())
+			emailService.sendUserAckfromSupportEmail(email);
+		else
+			emailService.sendUserAckfromBusinnesEmail(email);
+
 		System.out.println("saved : " + saved.toString());
 
 		// Send email to sales Team as well
 
-		if (contact.getLoggedinUser() != null)
-			emailService.sendSupportEmail(email, saved);
+		logger.info("contact.getLoggedinUser() : "+contact.getLoggedinUser());
+
+		if (contact.getLoggedinUser() != null && !contact.getLoggedinUser().isEmpty())
+			emailService.toSupportEmail(email, saved);
 		else
-			emailService.sendSalesEmail(email, saved);
+			emailService.toSalesEmail(email, saved);
 
 		return new ApiResponse(HttpStatus.OK, SUCCESS, saved);
 	}

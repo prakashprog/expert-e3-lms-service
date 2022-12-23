@@ -54,6 +54,9 @@ public class User implements Comparable<User> {
 	private String partnerId;
 
 	@DynamoDBAttribute
+	private String partnerImg;
+
+	@DynamoDBAttribute
 	private String email;
 
 	@DynamoDBTypeConvertedEnum
@@ -238,6 +241,14 @@ public class User implements Comparable<User> {
 
 	public void setUserRole(ExpertRole userRole) {
 		this.userRole = userRole;
+	}
+
+	public String getPartnerImg() {
+		return partnerImg;
+	}
+
+	public void setPartnerImg(String partnerImg) {
+		this.partnerImg = partnerImg;
 	}
 
 

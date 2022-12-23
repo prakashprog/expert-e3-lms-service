@@ -2,7 +2,6 @@ package com.expertworks.lms.aspect;
 
 import java.io.IOException;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.Scanner;
 
 import javax.servlet.ServletInputStream;
@@ -25,24 +24,24 @@ import com.expertworks.lms.util.TokenUtil;
 @Aspect
 @Component
 public class AuditAspect {
-	
+
 
     private final static Logger logger = LoggerFactory.getLogger(AuditAspect.class);
-	
+
     @Autowired
     TokenUtil tokenUtil;
-    
+
     @Autowired
     AuditRepository auditRepository;
-	
+
 	@Around("@annotation(LogExecutionTime)")
 	public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
 	    long start = System.currentTimeMillis();
 	    String token = null;
-	    
+
 	    ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = attributes.getRequest();
-        
+
         Enumeration<String> headerNames = request.getHeaderNames();
         logger.info("==============================================================");
         while (headerNames.hasMoreElements()) {
@@ -53,7 +52,7 @@ public class AuditAspect {
         String authorizationHeader = request.getHeader("Authorization");
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
 			token = authorizationHeader.substring(7);
-        
+
         }
                  //This is the information to record the http request.
         logger.info("==============================================================");
@@ -64,8 +63,8 @@ public class AuditAspect {
             logger.info(paramName + " = " + request.getParameter(paramName));
         }
         logger.info("==============================================================");
-       
-      
+
+
         //IP
         logger.info("IP = {}", request.getRemoteAddr());
         //URL
@@ -88,24 +87,24 @@ public class AuditAspect {
         audit.setUrl(request.getRequestURL().toString());
         audit.setUser(tokenUtil.getUserId());
         if(joinPoint.getArgs().length>0)
-        audit.setArgs(((Object[])joinPoint.getArgs())[0].toString());
-        
+        audit.setArgs(joinPoint.getArgs()[0].toString());
+
         audit = auditRepository.save(audit);
 
-	    Object proceed = joinPoint.proceed();
+	    Object proceed = joinPoint.proceed();//actual method
 
 	    long executionTime = System.currentTimeMillis() - start;
 
 	    logger.info(joinPoint.getSignature() + " executed in " + executionTime + "ms ;" +proceed.toString());
-	    
+
 	    audit.setPayload(proceed.toString());
 	    audit.setTimetaken(String.valueOf(executionTime));
 	   auditRepository.update(audit.getId(), audit);
-	    
+
 	    return proceed;
 	}
 
-	
+
 	public String extractPostRequestBody(HttpServletRequest request) {
 	    if ("POST".equalsIgnoreCase(request.getMethod())) {
 	        Scanner s = null;
@@ -118,7 +117,7 @@ public class AuditAspect {
 	    }
 	    return "";
 	}
-	
+
 	public String httpServletRequestToString(HttpServletRequest request) throws Exception {
 
 	    ServletInputStream mServletInputStream = request.getInputStream();

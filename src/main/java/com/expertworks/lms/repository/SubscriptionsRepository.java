@@ -13,6 +13,7 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
@@ -34,13 +35,15 @@ public class SubscriptionsRepository {
 		return dynamoDBMapper.load(Subscriptions.class, subscriptionIdentifier, courseOrPackageId);
 	}
 
-	public List<Subscriptions> get(String subscriptionIdentifier) {
+	public List<Subscriptions> query(String subscriptionIdentifier) {
 
-		Subscriptions subscriptions = new Subscriptions();
+		Subscriptions subscriptions = new Subscriptions();  
 		subscriptions.setSubscriptionIdentifier(subscriptionIdentifier);
 
-		DynamoDBQueryExpression<Subscriptions> dynamoDBQueryExpression = new DynamoDBQueryExpression().withHashKeyValues(subscriptions);
-		PaginatedQueryList<Subscriptions> paginatedQueryList = dynamoDBMapper.query(Subscriptions.class, dynamoDBQueryExpression);
+		DynamoDBQueryExpression<Subscriptions> dynamoDBQueryExpression = new DynamoDBQueryExpression()
+				.withHashKeyValues(subscriptions);
+		PaginatedQueryList<Subscriptions> paginatedQueryList = dynamoDBMapper.query(Subscriptions.class,
+				dynamoDBQueryExpression);
 		paginatedQueryList.loadAllResults();
 
 		List<Subscriptions> list = new ArrayList<Subscriptions>(paginatedQueryList.size());
@@ -55,6 +58,14 @@ public class SubscriptionsRepository {
 
 	}
 
+	public void update(Subscriptions subscriptions) {
+
+			DynamoDBMapperConfig dynamoDBMapperConfig = new DynamoDBMapperConfig.Builder()
+					.withConsistentReads(DynamoDBMapperConfig.ConsistentReads.CONSISTENT)
+					.withSaveBehavior(DynamoDBMapperConfig.SaveBehavior.APPEND_SET).build();
+			dynamoDBMapper.save(subscriptions, dynamoDBMapperConfig);
+
+	}
 
 	public static void main(String[] args) {
 
@@ -66,26 +77,24 @@ public class SubscriptionsRepository {
 				.build();
 		DynamoDB dynamoDB = new DynamoDB(client);
 		Table table = dynamoDB.getTable("Subscriptions");
-		//Item item = table.getItem("subscriptionIdentifier", "B2C_test02B2CCustomer");
+		// Item item = table.getItem("subscriptionIdentifier", "B2C_test02B2CCustomer");
 		ScanSpec ScanSpec = new ScanSpec();
 		ItemCollection<ScanOutcome> items = table.scan(ScanSpec);
 
 		for (Item item : items) {
-			//System.out.println(item.toJSONPretty());
+			// System.out.println(item.toJSONPretty());
 
 		}
 
-		Subscriptions subscriptions= new DynamoDBMapper(client)
-				.load(Subscriptions.class, "B2B_testCustomer", "package-1");
+		Subscriptions subscriptions = new DynamoDBMapper(client).load(Subscriptions.class, "B2B_testCustomer",
+				"package-1");
 		System.out.println(subscriptions.toString());
 
-		Subscriptions subscriptions1= new Subscriptions();
+		Subscriptions subscriptions1 = new Subscriptions();
 		subscriptions1.setSubscriptionIdentifier("B2B_testCustomer111");
 		subscriptions1.setCourseOrPackageId("test");
 		subscriptions1.setSubscriptionStatus(SubscriptionStatus.SUBSCRIBED);
-		new DynamoDBMapper(client)
-				.save(subscriptions1);
+		new DynamoDBMapper(client).save(subscriptions1);
 	}
-
 
 }

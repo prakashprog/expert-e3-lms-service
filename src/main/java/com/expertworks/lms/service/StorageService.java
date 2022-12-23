@@ -1,5 +1,6 @@
 package com.expertworks.lms.service;
 
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -42,7 +43,7 @@ public class StorageService {
 		System.out.println("--Uploading file done : " +fileNameInS3 );
         //s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
         fileObj.delete();
-        return "File uploaded : " + fileNameInS3;
+        return fileNameInS3;
     }
 
 

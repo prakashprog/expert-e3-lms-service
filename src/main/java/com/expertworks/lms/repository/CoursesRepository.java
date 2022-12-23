@@ -21,6 +21,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBSaveExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
+import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
 import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedScanList;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
@@ -71,6 +72,29 @@ public class CoursesRepository {
 			Courses element = iterator.next();
 			if (element.getSk().startsWith("C"))
 				list.add(element);
+		}
+
+		return list;
+
+	}
+
+
+
+	public List<Courses> getAllRecords(String courseId) {
+
+		Courses courses = new Courses();
+		courses.setCourseId(courseId);
+
+		DynamoDBQueryExpression<Courses> dynamoDBQueryExpression = new DynamoDBQueryExpression().withHashKeyValues(courses);
+		PaginatedQueryList<Courses> paginatedQueryList = dynamoDBMapper.query(Courses.class, dynamoDBQueryExpression);
+		paginatedQueryList.loadAllResults();
+
+		List<Courses> list = new ArrayList<Courses>(paginatedQueryList.size());
+
+		Iterator<Courses> iterator = paginatedQueryList.iterator();
+		while (iterator.hasNext()) {
+			Courses element = iterator.next();
+			list.add(element);
 		}
 
 		return list;

@@ -5,6 +5,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBRangeKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConvertedEnum;
+import com.expertworks.lms.enums.CustomerType;
 import com.expertworks.lms.enums.PackageType;
 import com.expertworks.lms.enums.SubscriptionStatus;
 
@@ -43,5 +44,11 @@ public class Subscriptions {
 	@DynamoDBTypeConvertedEnum
 	@DynamoDBAttribute(attributeName = "subscriptionPackage")
 	private PackageType subscriptionPackage;
+
+	@DynamoDBTypeConvertedEnum
+	@DynamoDBAttribute(attributeName = "customerType")
+	private CustomerType customerType;
+
+	private String groupId;
 
 }

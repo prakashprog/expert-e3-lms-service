@@ -317,7 +317,7 @@ public class EmailService {
 
 	}
 
-	public void sendContactUsEMailv1(EmailDTO email) throws Exception {
+	public void sendUserAckfromBusinnesEmail(EmailDTO email) throws Exception {
 
 		// final String FROM = "Sales@expert-works.com";
 		// final String FROM = "Sales Team <Sales@expert-works.com>";
@@ -347,11 +347,41 @@ public class EmailService {
 
 	}
 
+	public void sendUserAckfromSupportEmail(EmailDTO email) throws Exception {
+
+		// final String FROM = "Sales@expert-works.com";
+		// final String FROM = "Sales Team <Sales@expert-works.com>";
+		final String FROM = supportEmail;
+		final String SUBJECT = "Thanks for contacting Expert-Works ";
+
+		Map<String, Object> model = new HashMap<>();
+		model.put("user", StringUtils.capitalize(email.getUsername()));
+
+		Configuration fmConfiguration = freeMarkerConfigurationFactoryBean.createConfiguration();
+		Template template = fmConfiguration.getTemplate("email_template/user_ack_support.html");
+		String HTMLBODY = FreeMarkerTemplateUtils.processTemplateIntoString(template, model);
+
+		System.out.println("======================html===========================");
+		// System.out.println(HTMLBODY);
+
+		final String TEXTBODY = "This email was sent from <a href='https://www.expert-works.com'>\"";
+
+		SendEmailRequest request = new SendEmailRequest()
+				.withDestination(new Destination().withToAddresses(email.getTo()))
+				.withMessage(new com.amazonaws.services.simpleemail.model.Message()
+						.withBody(new Body().withHtml(new Content().withCharset("UTF-8").withData(HTMLBODY))
+								.withText(new Content().withCharset("UTF-8").withData(TEXTBODY)))
+						.withSubject(new Content().withCharset("UTF-8").withData(SUBJECT)))
+				.withSource(FROM);
+		client.sendEmail(request);
+
+	}
 
 
 
 
-	public void sendSalesEmail(EmailDTO email, Contact contact) {
+
+	public void toSalesEmail(EmailDTO email, Contact contact) {
 
 		final String FROM = salesEmail;
 		//final String to = email.getTo();
@@ -379,7 +409,7 @@ public class EmailService {
 	 * @param contact
 	 */
 
-	public void sendSupportEmail(EmailDTO email, Contact contact) {
+	public void toSupportEmail(EmailDTO email, Contact contact) {
 
 		final String FROM = supportEmail;
 		//final String to = email.getTo();

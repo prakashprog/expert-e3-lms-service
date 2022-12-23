@@ -89,6 +89,14 @@ public class Courses implements Comparable<Courses> {
 	private String status;
 
 
+
+	@DynamoDBAttribute
+	private List<String> meta;
+
+	@DynamoDBAttribute
+	private List<String> heading;
+
+
 	@Override
 	public int compareTo(Courses courses) {
 		return sk.compareTo(courses.sk);
@@ -370,6 +378,24 @@ public class Courses implements Comparable<Courses> {
 	public void setStatus(String status) {
 		this.status = status;
 	}
+
+
+	public List<String> getMeta() {
+		return meta;
+	}
+
+	public void setMeta(List<String> meta) {
+		this.meta = meta;
+	}
+
+	public List<String> getHeading() {
+		return heading;
+	}
+
+	public void setHeading(List<String> heading) {
+		this.heading = heading;
+	}
+
 
 
 

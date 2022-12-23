@@ -5,6 +5,7 @@ public class StorageDTO {
 
 	private String name;
 	private String email;
+	private String fileName;
 
 	public String getName() {
 		return name;
@@ -17,6 +18,12 @@ public class StorageDTO {
 	}
 	public void setEmail(String email) {
 		this.email = email;
+	}
+	public String getFileName() {
+		return fileName;
+	}
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
 	}
 
 

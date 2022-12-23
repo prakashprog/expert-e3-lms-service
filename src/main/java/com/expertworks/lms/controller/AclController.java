@@ -58,10 +58,10 @@ public class AclController {
 		groupId = tokenUtil.getGroupId();
 		logger.info("Passed groupId: " + groupId);
 		if (groupId != null) {
-			subscriptions = subscriptionsService.get("B2B_" + groupId);
+			subscriptions = subscriptionsService.query("B2B_" + groupId);
 			System.out.println("subscriptions : " + subscriptions);
 			if (subscriptions != null && subscriptions.getSubscriptionStatus() == SubscriptionStatus.SUBSCRIBED) {
-				System.out.println("subscriptions Status : " + subscriptions.getSubscriptionStatus());
+				System.out.println("subscriptions Status is : " + subscriptions.getSubscriptionStatus());
 				System.out.println("subscriptions Package : " + subscriptions.getSubscriptionPackage());
 				// Pack pack = packageService.getPack(subscriptions.getCourseOrPackageId());
 				if (subscriptions.getSubscriptionPackage() == PackageType.PREMIUM)

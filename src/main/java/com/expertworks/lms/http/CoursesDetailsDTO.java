@@ -6,11 +6,9 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.StandardToStringStyle;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import com.expertworks.lms.model.Currency;
-
 
 public class CoursesDetailsDTO  {
-		
+
 	private String courseId;
 	private float percentage;
 	private String type;
@@ -25,14 +23,22 @@ public class CoursesDetailsDTO  {
 	private String hours;
 	private String rating;
 	private String reviews;
-	
+
 	private List<String> includes;
 	private List<CurrencyDTO> currencies;
-	
+
 	private String actualPrice;
 	private String price;
-	
+
 	List<CoursesDTO> sections;
+
+
+
+	private List<String> meta;
+	private List<String> heading;
+
+
+
 
 	public float getPercentage() {
 		return percentage;
@@ -172,7 +178,6 @@ public class CoursesDetailsDTO  {
 	}
 
 
-
 	public String getPrice() {
 		return price;
 	}
@@ -191,7 +196,27 @@ public class CoursesDetailsDTO  {
 
 
 
+	public List<String> getMeta() {
+		return meta;
+	}
+
+	public void setMeta(List<String> meta) {
+		this.meta = meta;
+	}
+
+	public List<String> getHeading() {
+		return heading;
+	}
+
+	public void setHeading(List<String> heading) {
+		this.heading = heading;
+	}
 
 
-	
+
+
+
+
+
+
 }
